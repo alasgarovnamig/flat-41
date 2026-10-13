@@ -1,0 +1,35 @@
+{{define "body"}}<main class="acs">
+<div class="acs-box">
+  <div class="acs-head">
+    <div class="bank"><svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#0F2742"/><path d="M16 6 6 11v2h20v-2L16 6Zm-7 9v8H7v3h18v-3h-2v-8h-3v8h-2.5v-8h-3v8H12v-8H9Z" fill="#fff"/></svg><span>Mock Bank 3-D Secure</span></div>
+    <div class="schemes2"><span class="vs">VISA Secure</span><span class="mc">ID Check</span></div>
+  </div>
+  <div class="acs-body">
+    <h1>{{.T "acsTitle"}}</h1>
+    <p class="lead">{{.T "acsIntro" "phone" .Phone}}</p>
+    <table class="acs-table">
+      <tr><td>{{.T "acsMerchant"}}</td><td>{{.MerchantName}}</td></tr>
+      <tr><td>{{.T "acsAmount"}}</td><td>{{.Amount}}</td></tr>
+      <tr><td>{{.T "acsDate"}}</td><td>{{.Date}}</td></tr>
+      <tr><td>{{.T "acsCard"}}</td><td>{{.Card}}</td></tr>
+    </table>
+    {{if not .IsProd}}<div class="alert alert-warn"><b>{{.T "testOtp" "otp" "111111"}}</b></div>{{end}}
+    {{if .Error}}<div class="alert alert-err" role="alert">{{.Error}}</div>{{end}}
+    {{if .Info}}<div class="alert alert-info">{{.Info}}</div>{{end}}
+    <form method="post" action="{{.OTPAction}}" autocomplete="off" onsubmit="var b=this.querySelector('button');b.disabled=true">
+      <input type="hidden" name="nonce" value="{{.Nonce}}">
+      <div class="field">
+        <label for="otp">{{.T "otp"}}</label>
+        <input class="input otp" id="otp" name="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="6" required autofocus>
+      </div>
+      <button class="btn btn-acs" type="submit">{{.T "confirm"}}</button>
+    </form>
+    <div class="acs-links">
+      <form method="post" action="{{.ResendAction}}"><input type="hidden" name="nonce" value="{{.Nonce}}"><button class="linkbtn" type="submit">{{.T "resend"}}</button></form>
+      <form method="post" action="{{.CancelAction}}"><input type="hidden" name="nonce" value="{{.Nonce}}"><button class="linkbtn muted" type="submit">{{.T "cancelPayment"}}</button></form>
+    </div>
+  </div>
+  <div class="acs-foot">{{.T "acsFooter"}}</div>
+</div>
+</main>
+<script>{{.Script}}</script>{{end}}

@@ -1,12 +1,8 @@
-# BuildKit picks this up for `docker build -f apps/mockbank/Dockerfile .` (context = repo root)
-**/node_modules
-**/dist
-**/.env
-**/.env.*
-!**/.env.example
-.git
-apps/mobile
-apps/web
-apps/admin
-**/*.log
-**/coverage
+# BuildKit picks this up for `docker build -f apps/mockbank/Dockerfile .` (context = repo root).
+# Only the Go sources of the mock bank are sent to the daemon.
+*
+!apps/mockbank/go.mod
+!apps/mockbank/go.sum
+!apps/mockbank/cmd/
+!apps/mockbank/internal/
+**/*_test.go
