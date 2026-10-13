@@ -54,3 +54,10 @@ The tests below are kept as they are: they describe the contract; the backend (o
   `MapPoint.title` is present but `MapPoint.coverUrl` is always `null` (map query selects no cover); `GET /pages`,
   `GET /conversations/:id`, `PATCH /saved-searches/:id`, `POST /bookings/:id/pay` and the plain-WebSocket realtime
   protocol are missing (NestJS still speaks socket.io on `/ws`).
+
+## Lead decisions (for the Go backend)
+- Booking conflict codes are now part of the contract: `DATES_UNAVAILABLE`, `OWN_LISTING`, `PAST_DATE`, `TOO_LONG`, `MIN_NIGHTS`, `MAX_GUESTS` (added to `ERROR_CODES`); tests pin `DATES_UNAVAILABLE` / `OWN_LISTING`.
+- `GET /subscriptions/me` without subscription must return the JSON literal `null` (Content-Type application/json).
+- Empty PATCH bodies on catalog/plans are a 200 no-op returning the current entity (404 for unknown code).
+- Oversized upload → 413 with `code: FILE_TOO_LARGE`.
+- Malformed UUID in a path param → 400 `VALIDATION_ERROR` everywhere; throttling → 429 `RATE_LIMITED`; unknown route → 404 `NOT_FOUND` (all with `code`).

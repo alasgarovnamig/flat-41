@@ -134,11 +134,11 @@ describe('bookings: wallet payment, overlap, visibility', () => {
     ok(await first.post('/bookings', { listingId: listing.id, checkIn: localDay(12), checkOut: localDay(14), guests: 1, method: 'WALLET' }));
     const rival = await fundedGuest(100_000, 'Rival');
     for (const [checkIn, checkOut] of [[localDay(13), localDay(16)], [localDay(11), localDay(13)], [localDay(10), localDay(16)]]) {
-      err(await rival.post('/bookings', { listingId: listing.id, checkIn, checkOut, guests: 1, method: 'WALLET' }), 409);
+      err(await rival.post('/bookings', { listingId: listing.id, checkIn, checkOut, guests: 1, method: 'WALLET' }), 409, 'DATES_UNAVAILABLE');
     }
     assert.equal((await wallet(rival)).balance, 100_000, 'rejected bookings charge nothing');
     await fund(host, 50_000);
-    err(await host.post('/bookings', { listingId: listing.id, checkIn: localDay(30), checkOut: localDay(31), guests: 1, method: 'WALLET' }), 409);
+    err(await host.post('/bookings', { listingId: listing.id, checkIn: localDay(30), checkOut: localDay(31), guests: 1, method: 'WALLET' }), 409, 'OWN_LISTING');
   });
 
   test('wallet too small → 402 INSUFFICIENT_FUNDS and the dates stay free', async () => {
