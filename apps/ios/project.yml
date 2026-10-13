@@ -1,0 +1,88 @@
+# XcodeGen spec for the EvTap iOS app — `xcodegen generate` (or `make project`) creates EvTap.xcodeproj.
+# The .xcodeproj is generated and git-ignored; edit this file instead.
+name: EvTap
+
+options:
+  bundleIdPrefix: az.evtap
+  developmentLanguage: az
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "16.0"
+  minimumXcodeGenVersion: "2.40.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+configs:
+  Debug: debug
+  Release: release
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+    SWIFT_EMIT_LOC_STRINGS: YES
+    DEAD_CODE_STRIPPING: YES
+
+packages:
+  EvTapCore:
+    path: Packages/EvTapCore
+
+fileGroups:
+  - Config
+  - Supporting
+  - README.md
+
+targets:
+  EvTap:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: EvTap
+    dependencies:
+      - package: EvTapCore
+    configFiles:
+      Debug: Config/Debug.xcconfig
+      Release: Config/Release.xcconfig
+    settings:
+      base:
+        PRODUCT_NAME: EvTap
+        PRODUCT_BUNDLE_IDENTIFIER: az.evtap.app
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: Supporting/EvTap.entitlements
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        SWIFT_STRICT_CONCURRENCY: complete
+        ENABLE_PREVIEWS: YES
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+      configs:
+        Debug:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+          SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+        Release:
+          SWIFT_OPTIMIZATION_LEVEL: "-O"
+          SWIFT_COMPILATION_MODE: wholemodule
+
+schemes:
+  EvTap:
+    build:
+      targets:
+        EvTap: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - package: EvTapCore/EvTapCoreTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

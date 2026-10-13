@@ -1,0 +1,866 @@
+{
+  "countries": [
+    {
+      "code": "AZ",
+      "name": {
+        "az": "Azərbaycan",
+        "en": "Azerbaijan",
+        "ru": "Азербайджан"
+      },
+      "currency": "AZN",
+      "phonePrefix": "+994"
+    },
+    {
+      "code": "GE",
+      "name": {
+        "az": "Gürcüstan",
+        "en": "Georgia",
+        "ru": "Грузия"
+      },
+      "currency": "GEL",
+      "phonePrefix": "+995"
+    }
+  ],
+  "cities": [
+    {
+      "id": "baku",
+      "country": "AZ",
+      "name": {
+        "az": "Bakı",
+        "en": "Baku",
+        "ru": "Баку"
+      },
+      "lat": 40.4093,
+      "lng": 49.8671,
+      "popular": true
+    },
+    {
+      "id": "sumgait",
+      "country": "AZ",
+      "name": {
+        "az": "Sumqayıt",
+        "en": "Sumgait",
+        "ru": "Сумгаит"
+      },
+      "lat": 40.5897,
+      "lng": 49.6686,
+      "popular": true
+    },
+    {
+      "id": "khirdalan",
+      "country": "AZ",
+      "name": {
+        "az": "Xırdalan",
+        "en": "Khirdalan",
+        "ru": "Хырдалан"
+      },
+      "lat": 40.448,
+      "lng": 49.7553,
+      "popular": true
+    },
+    {
+      "id": "ganja",
+      "country": "AZ",
+      "name": {
+        "az": "Gəncə",
+        "en": "Ganja",
+        "ru": "Гянджа"
+      },
+      "lat": 40.6828,
+      "lng": 46.3606,
+      "popular": true
+    },
+    {
+      "id": "absheron",
+      "country": "AZ",
+      "name": {
+        "az": "Abşeron",
+        "en": "Absheron",
+        "ru": "Апшерон"
+      },
+      "lat": 40.4728,
+      "lng": 49.6233
+    },
+    {
+      "id": "mingachevir",
+      "country": "AZ",
+      "name": {
+        "az": "Mingəçevir",
+        "en": "Mingachevir",
+        "ru": "Мингечевир"
+      },
+      "lat": 40.7703,
+      "lng": 47.0496
+    },
+    {
+      "id": "lankaran",
+      "country": "AZ",
+      "name": {
+        "az": "Lənkəran",
+        "en": "Lankaran",
+        "ru": "Ленкорань"
+      },
+      "lat": 38.7529,
+      "lng": 48.8475
+    },
+    {
+      "id": "shaki",
+      "country": "AZ",
+      "name": {
+        "az": "Şəki",
+        "en": "Shaki",
+        "ru": "Шеки"
+      },
+      "lat": 41.1919,
+      "lng": 47.1706
+    },
+    {
+      "id": "gabala",
+      "country": "AZ",
+      "name": {
+        "az": "Qəbələ",
+        "en": "Gabala",
+        "ru": "Габала"
+      },
+      "lat": 40.9982,
+      "lng": 47.8468,
+      "popular": true
+    },
+    {
+      "id": "guba",
+      "country": "AZ",
+      "name": {
+        "az": "Quba",
+        "en": "Guba",
+        "ru": "Губа"
+      },
+      "lat": 41.3611,
+      "lng": 48.5126
+    },
+    {
+      "id": "gusar",
+      "country": "AZ",
+      "name": {
+        "az": "Qusar",
+        "en": "Gusar",
+        "ru": "Гусар"
+      },
+      "lat": 41.4275,
+      "lng": 48.4302
+    },
+    {
+      "id": "shamakhi",
+      "country": "AZ",
+      "name": {
+        "az": "Şamaxı",
+        "en": "Shamakhi",
+        "ru": "Шемаха"
+      },
+      "lat": 40.6314,
+      "lng": 48.6364
+    },
+    {
+      "id": "nakhchivan",
+      "country": "AZ",
+      "name": {
+        "az": "Naxçıvan",
+        "en": "Nakhchivan",
+        "ru": "Нахичевань"
+      },
+      "lat": 39.2089,
+      "lng": 45.4122
+    },
+    {
+      "id": "shirvan",
+      "country": "AZ",
+      "name": {
+        "az": "Şirvan",
+        "en": "Shirvan",
+        "ru": "Ширван"
+      },
+      "lat": 39.9317,
+      "lng": 48.9203
+    },
+    {
+      "id": "masalli",
+      "country": "AZ",
+      "name": {
+        "az": "Masallı",
+        "en": "Masalli",
+        "ru": "Масаллы"
+      },
+      "lat": 39.0341,
+      "lng": 48.6654
+    },
+    {
+      "id": "nabran",
+      "country": "AZ",
+      "name": {
+        "az": "Nabran",
+        "en": "Nabran",
+        "ru": "Набрань"
+      },
+      "lat": 41.8003,
+      "lng": 48.6153
+    },
+    {
+      "id": "tbilisi",
+      "country": "GE",
+      "name": {
+        "az": "Tbilisi",
+        "en": "Tbilisi",
+        "ru": "Тбилиси"
+      },
+      "lat": 41.7151,
+      "lng": 44.8271,
+      "popular": true
+    },
+    {
+      "id": "batumi",
+      "country": "GE",
+      "name": {
+        "az": "Batumi",
+        "en": "Batumi",
+        "ru": "Батуми"
+      },
+      "lat": 41.6168,
+      "lng": 41.6367,
+      "popular": true
+    },
+    {
+      "id": "kutaisi",
+      "country": "GE",
+      "name": {
+        "az": "Kutaisi",
+        "en": "Kutaisi",
+        "ru": "Кутаиси"
+      },
+      "lat": 42.2679,
+      "lng": 42.6946
+    },
+    {
+      "id": "rustavi",
+      "country": "GE",
+      "name": {
+        "az": "Rustavi",
+        "en": "Rustavi",
+        "ru": "Рустави"
+      },
+      "lat": 41.5495,
+      "lng": 44.9934
+    },
+    {
+      "id": "gudauri",
+      "country": "GE",
+      "name": {
+        "az": "Qudauri",
+        "en": "Gudauri",
+        "ru": "Гудаури"
+      },
+      "lat": 42.4775,
+      "lng": 44.4789
+    },
+    {
+      "id": "bakuriani",
+      "country": "GE",
+      "name": {
+        "az": "Bakuriani",
+        "en": "Bakuriani",
+        "ru": "Бакуриани"
+      },
+      "lat": 41.7497,
+      "lng": 43.5326
+    },
+    {
+      "id": "kobuleti",
+      "country": "GE",
+      "name": {
+        "az": "Kobuleti",
+        "en": "Kobuleti",
+        "ru": "Кобулети"
+      },
+      "lat": 41.8206,
+      "lng": 41.7756
+    }
+  ],
+  "districts": [
+    {
+      "id": "baku-binagadi",
+      "cityId": "baku",
+      "name": {
+        "az": "Binəqədi r.",
+        "en": "Binagadi",
+        "ru": "Бинагадинский р."
+      }
+    },
+    {
+      "id": "baku-garadagh",
+      "cityId": "baku",
+      "name": {
+        "az": "Qaradağ r.",
+        "en": "Garadagh",
+        "ru": "Гарадагский р."
+      }
+    },
+    {
+      "id": "baku-khatai",
+      "cityId": "baku",
+      "name": {
+        "az": "Xətai r.",
+        "en": "Khatai",
+        "ru": "Хатаинский р."
+      }
+    },
+    {
+      "id": "baku-khazar",
+      "cityId": "baku",
+      "name": {
+        "az": "Xəzər r.",
+        "en": "Khazar",
+        "ru": "Хазарский р."
+      }
+    },
+    {
+      "id": "baku-narimanov",
+      "cityId": "baku",
+      "name": {
+        "az": "Nərimanov r.",
+        "en": "Narimanov",
+        "ru": "Наримановский р."
+      }
+    },
+    {
+      "id": "baku-nasimi",
+      "cityId": "baku",
+      "name": {
+        "az": "Nəsimi r.",
+        "en": "Nasimi",
+        "ru": "Насиминский р."
+      }
+    },
+    {
+      "id": "baku-nizami",
+      "cityId": "baku",
+      "name": {
+        "az": "Nizami r.",
+        "en": "Nizami",
+        "ru": "Низаминский р."
+      }
+    },
+    {
+      "id": "baku-pirallahi",
+      "cityId": "baku",
+      "name": {
+        "az": "Pirallahı r.",
+        "en": "Pirallahi",
+        "ru": "Пираллахинский р."
+      }
+    },
+    {
+      "id": "baku-sabunchu",
+      "cityId": "baku",
+      "name": {
+        "az": "Sabunçu r.",
+        "en": "Sabunchu",
+        "ru": "Сабунчинский р."
+      }
+    },
+    {
+      "id": "baku-sabail",
+      "cityId": "baku",
+      "name": {
+        "az": "Səbail r.",
+        "en": "Sabail",
+        "ru": "Сабаильский р."
+      }
+    },
+    {
+      "id": "baku-surakhani",
+      "cityId": "baku",
+      "name": {
+        "az": "Suraxanı r.",
+        "en": "Surakhani",
+        "ru": "Сураханский р."
+      }
+    },
+    {
+      "id": "baku-yasamal",
+      "cityId": "baku",
+      "name": {
+        "az": "Yasamal r.",
+        "en": "Yasamal",
+        "ru": "Ясамальский р."
+      }
+    },
+    {
+      "id": "sumgait-center",
+      "cityId": "sumgait",
+      "name": {
+        "az": "Mərkəz",
+        "en": "Center",
+        "ru": "Центр"
+      }
+    },
+    {
+      "id": "sumgait-corat",
+      "cityId": "sumgait",
+      "name": {
+        "az": "Corat",
+        "en": "Jorat",
+        "ru": "Джорат"
+      }
+    },
+    {
+      "id": "ganja-kapaz",
+      "cityId": "ganja",
+      "name": {
+        "az": "Kəpəz r.",
+        "en": "Kapaz",
+        "ru": "Кяпазский р."
+      }
+    },
+    {
+      "id": "ganja-nizami",
+      "cityId": "ganja",
+      "name": {
+        "az": "Nizami r.",
+        "en": "Nizami",
+        "ru": "Низаминский р."
+      }
+    },
+    {
+      "id": "tbilisi-vake",
+      "cityId": "tbilisi",
+      "name": {
+        "az": "Vake",
+        "en": "Vake",
+        "ru": "Ваке"
+      }
+    },
+    {
+      "id": "tbilisi-saburtalo",
+      "cityId": "tbilisi",
+      "name": {
+        "az": "Saburtalo",
+        "en": "Saburtalo",
+        "ru": "Сабуртало"
+      }
+    },
+    {
+      "id": "tbilisi-mtatsminda",
+      "cityId": "tbilisi",
+      "name": {
+        "az": "Mtatsminda",
+        "en": "Mtatsminda",
+        "ru": "Мтацминда"
+      }
+    },
+    {
+      "id": "tbilisi-krtsanisi",
+      "cityId": "tbilisi",
+      "name": {
+        "az": "Krtsanisi",
+        "en": "Krtsanisi",
+        "ru": "Крцаниси"
+      }
+    },
+    {
+      "id": "tbilisi-isani",
+      "cityId": "tbilisi",
+      "name": {
+        "az": "İsani",
+        "en": "Isani",
+        "ru": "Исани"
+      }
+    },
+    {
+      "id": "tbilisi-samgori",
+      "cityId": "tbilisi",
+      "name": {
+        "az": "Samqori",
+        "en": "Samgori",
+        "ru": "Самгори"
+      }
+    },
+    {
+      "id": "tbilisi-chughureti",
+      "cityId": "tbilisi",
+      "name": {
+        "az": "Çuğureti",
+        "en": "Chughureti",
+        "ru": "Чугурети"
+      }
+    },
+    {
+      "id": "tbilisi-didube",
+      "cityId": "tbilisi",
+      "name": {
+        "az": "Didube",
+        "en": "Didube",
+        "ru": "Дидубе"
+      }
+    },
+    {
+      "id": "tbilisi-nadzaladevi",
+      "cityId": "tbilisi",
+      "name": {
+        "az": "Nadzaladevi",
+        "en": "Nadzaladevi",
+        "ru": "Надзаладеви"
+      }
+    },
+    {
+      "id": "tbilisi-gldani",
+      "cityId": "tbilisi",
+      "name": {
+        "az": "Qldani",
+        "en": "Gldani",
+        "ru": "Глдани"
+      }
+    },
+    {
+      "id": "batumi-old",
+      "cityId": "batumi",
+      "name": {
+        "az": "Köhnə Batumi",
+        "en": "Old Batumi",
+        "ru": "Старый Батуми"
+      }
+    },
+    {
+      "id": "batumi-new",
+      "cityId": "batumi",
+      "name": {
+        "az": "Yeni Bulvar",
+        "en": "New Boulevard",
+        "ru": "Новый бульвар"
+      }
+    }
+  ],
+  "metroStations": [
+    {
+      "id": "icherisheher",
+      "cityId": "baku",
+      "line": "red",
+      "name": {
+        "az": "İçərişəhər",
+        "en": "Icherisheher",
+        "ru": "Ичеришехер"
+      },
+      "lat": 40.3659,
+      "lng": 49.8317
+    },
+    {
+      "id": "sahil",
+      "cityId": "baku",
+      "line": "red",
+      "name": {
+        "az": "Sahil",
+        "en": "Sahil",
+        "ru": "Сахил"
+      },
+      "lat": 40.3716,
+      "lng": 49.8442
+    },
+    {
+      "id": "28-may",
+      "cityId": "baku",
+      "line": "red",
+      "name": {
+        "az": "28 May",
+        "en": "28 May",
+        "ru": "28 Мая"
+      },
+      "lat": 40.3799,
+      "lng": 49.8487
+    },
+    {
+      "id": "ganjlik",
+      "cityId": "baku",
+      "line": "red",
+      "name": {
+        "az": "Gənclik",
+        "en": "Ganjlik",
+        "ru": "Гянджлик"
+      },
+      "lat": 40.4004,
+      "lng": 49.8513
+    },
+    {
+      "id": "nariman-narimanov",
+      "cityId": "baku",
+      "line": "red",
+      "name": {
+        "az": "Nəriman Nərimanov",
+        "en": "Nariman Narimanov",
+        "ru": "Нариман Нариманов"
+      },
+      "lat": 40.4027,
+      "lng": 49.8708
+    },
+    {
+      "id": "bakmil",
+      "cityId": "baku",
+      "line": "red",
+      "name": {
+        "az": "Bakmil",
+        "en": "Bakmil",
+        "ru": "Бакмил"
+      },
+      "lat": 40.4146,
+      "lng": 49.8794
+    },
+    {
+      "id": "ulduz",
+      "cityId": "baku",
+      "line": "red",
+      "name": {
+        "az": "Ulduz",
+        "en": "Ulduz",
+        "ru": "Улдуз"
+      },
+      "lat": 40.4148,
+      "lng": 49.8913
+    },
+    {
+      "id": "koroghlu",
+      "cityId": "baku",
+      "line": "red",
+      "name": {
+        "az": "Koroğlu",
+        "en": "Koroghlu",
+        "ru": "Кероглу"
+      },
+      "lat": 40.4211,
+      "lng": 49.9178
+    },
+    {
+      "id": "qara-qarayev",
+      "cityId": "baku",
+      "line": "red",
+      "name": {
+        "az": "Qara Qarayev",
+        "en": "Gara Garayev",
+        "ru": "Кара Караев"
+      },
+      "lat": 40.4176,
+      "lng": 49.9336
+    },
+    {
+      "id": "neftchilar",
+      "cityId": "baku",
+      "line": "red",
+      "name": {
+        "az": "Neftçilər",
+        "en": "Neftchilar",
+        "ru": "Нефтчиляр"
+      },
+      "lat": 40.4106,
+      "lng": 49.9431
+    },
+    {
+      "id": "khalglar-dostlugu",
+      "cityId": "baku",
+      "line": "red",
+      "name": {
+        "az": "Xalqlar Dostluğu",
+        "en": "Khalglar Dostlughu",
+        "ru": "Халглар Достлугу"
+      },
+      "lat": 40.3976,
+      "lng": 49.9527
+    },
+    {
+      "id": "ahmadli",
+      "cityId": "baku",
+      "line": "red",
+      "name": {
+        "az": "Əhmədli",
+        "en": "Ahmadli",
+        "ru": "Ахмедлы"
+      },
+      "lat": 40.3853,
+      "lng": 49.954
+    },
+    {
+      "id": "hazi-aslanov",
+      "cityId": "baku",
+      "line": "red",
+      "name": {
+        "az": "Həzi Aslanov",
+        "en": "Hazi Aslanov",
+        "ru": "Ази Асланов"
+      },
+      "lat": 40.3727,
+      "lng": 49.9532
+    },
+    {
+      "id": "nizami",
+      "cityId": "baku",
+      "line": "green",
+      "name": {
+        "az": "Nizami",
+        "en": "Nizami",
+        "ru": "Низами"
+      },
+      "lat": 40.3794,
+      "lng": 49.8303
+    },
+    {
+      "id": "elmlar-akademiyasi",
+      "cityId": "baku",
+      "line": "green",
+      "name": {
+        "az": "Elmlər Akademiyası",
+        "en": "Elmlar Akademiyasi",
+        "ru": "Элмляр Академиясы"
+      },
+      "lat": 40.3751,
+      "lng": 49.8155
+    },
+    {
+      "id": "inshaatchilar",
+      "cityId": "baku",
+      "line": "green",
+      "name": {
+        "az": "İnşaatçılar",
+        "en": "Inshaatchilar",
+        "ru": "Иншаатчылар"
+      },
+      "lat": 40.3913,
+      "lng": 49.8028
+    },
+    {
+      "id": "20-yanvar",
+      "cityId": "baku",
+      "line": "green",
+      "name": {
+        "az": "20 Yanvar",
+        "en": "20 Yanvar",
+        "ru": "20 Января"
+      },
+      "lat": 40.4042,
+      "lng": 49.8086
+    },
+    {
+      "id": "memar-ajami",
+      "cityId": "baku",
+      "line": "green",
+      "name": {
+        "az": "Memar Əcəmi",
+        "en": "Memar Ajami",
+        "ru": "Мемар Аджеми"
+      },
+      "lat": 40.4111,
+      "lng": 49.8141
+    },
+    {
+      "id": "nasimi",
+      "cityId": "baku",
+      "line": "green",
+      "name": {
+        "az": "Nəsimi",
+        "en": "Nasimi",
+        "ru": "Насими"
+      },
+      "lat": 40.4246,
+      "lng": 49.8226
+    },
+    {
+      "id": "azadlig-prospekti",
+      "cityId": "baku",
+      "line": "green",
+      "name": {
+        "az": "Azadlıq Prospekti",
+        "en": "Azadlig Prospekti",
+        "ru": "Азадлыг проспекти"
+      },
+      "lat": 40.4258,
+      "lng": 49.8434
+    },
+    {
+      "id": "darnagul",
+      "cityId": "baku",
+      "line": "green",
+      "name": {
+        "az": "Dərnəgül",
+        "en": "Darnagul",
+        "ru": "Дарнагюль"
+      },
+      "lat": 40.4251,
+      "lng": 49.8606
+    },
+    {
+      "id": "jafar-jabbarli",
+      "cityId": "baku",
+      "line": "green",
+      "name": {
+        "az": "Cəfər Cabbarlı",
+        "en": "Jafar Jabbarli",
+        "ru": "Джафар Джаббарлы"
+      },
+      "lat": 40.3798,
+      "lng": 49.8494
+    },
+    {
+      "id": "shah-ismayil-khatai",
+      "cityId": "baku",
+      "line": "green",
+      "name": {
+        "az": "Şah İsmayıl Xətai",
+        "en": "Shah Ismayil Khatai",
+        "ru": "Шах Исмаил Хатаи"
+      },
+      "lat": 40.3833,
+      "lng": 49.8719
+    },
+    {
+      "id": "avtovagzal",
+      "cityId": "baku",
+      "line": "purple",
+      "name": {
+        "az": "Avtovağzal",
+        "en": "Avtovaghzal",
+        "ru": "Автовокзал"
+      },
+      "lat": 40.4211,
+      "lng": 49.7949
+    },
+    {
+      "id": "memar-ajami-2",
+      "cityId": "baku",
+      "line": "purple",
+      "name": {
+        "az": "Memar Əcəmi-2",
+        "en": "Memar Ajami-2",
+        "ru": "Мемар Аджеми-2"
+      },
+      "lat": 40.4118,
+      "lng": 49.8129
+    },
+    {
+      "id": "8-noyabr",
+      "cityId": "baku",
+      "line": "purple",
+      "name": {
+        "az": "8 Noyabr",
+        "en": "8 Noyabr",
+        "ru": "8 Ноября"
+      },
+      "lat": 40.4012,
+      "lng": 49.8177
+    },
+    {
+      "id": "khojasan",
+      "cityId": "baku",
+      "line": "purple",
+      "name": {
+        "az": "Xocəsən",
+        "en": "Khojasan",
+        "ru": "Ходжасан"
+      },
+      "lat": 40.4211,
+      "lng": 49.7809
+    }
+  ]
+}

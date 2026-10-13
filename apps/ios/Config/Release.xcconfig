@@ -1,0 +1,6 @@
+#include "Base.xcconfig"
+
+API_BASE_URL = https:/$()/api.evtap.az
+
+INFOPLIST_FILE = Supporting/Info.plist
+APS_ENVIRONMENT = production
