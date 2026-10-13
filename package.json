@@ -15,6 +15,7 @@
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
+    "test:contract": "pnpm --filter @evtap/contract-tests test",
     "db:migrate": "pnpm --filter @evtap/api db:migrate",
     "db:seed": "pnpm --filter @evtap/api db:seed"
   }
