@@ -56,7 +56,7 @@ const listingBase = z.object({
   title: z.string().trim().min(10).max(120),
   description: z.string().trim().min(30).max(5000),
   price: z.number().int().positive().max(1_000_000_000),
-  currency: z.enum(CURRENCIES as [string, ...string[]]).default('AZN'),
+  currency: z.enum(CURRENCIES as [string, ...string[]]),
   cityId: z.string().min(2),
   districtId: z.string().nullable().optional(),
   metroId: z.string().nullable().optional(),
@@ -72,9 +72,9 @@ const listingBase = z.object({
   yearBuilt: z.number().int().min(1800).max(2100).nullable().optional(),
   ceilingHeight: z.number().min(2).max(10).nullable().optional(),
   repair: z.enum(REPAIR_TYPES as [string, ...string[]]).nullable().optional(),
-  hasDocument: z.boolean().default(false), // çıxarış / kupça
-  mortgageAvailable: z.boolean().default(false),
-  amenities: z.array(z.enum(AMENITIES as [string, ...string[]])).default([]),
+  hasDocument: z.boolean(), // çıxarış / kupça
+  mortgageAvailable: z.boolean(),
+  amenities: z.array(z.enum(AMENITIES as [string, ...string[]])),
   maxGuests: z.number().int().min(1).max(50).nullable().optional(),
   minNights: z.number().int().min(1).max(365).nullable().optional(),
   checkInTime: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
@@ -92,7 +92,15 @@ const listingRefine = <T extends z.ZodTypeAny>(s: T) =>
     if (['APARTMENT', 'HOUSE', 'ROOM'].includes(v.propertyType) && v.rooms == null) ctx.addIssue({ code: 'custom', path: ['rooms'], message: 'Rooms required' });
   });
 
-export const createListingSchema = listingRefine(listingBase);
+/** Defaults only on create — PATCH must not reset fields the client did not send. */
+export const createListingSchema = listingRefine(
+  listingBase.extend({
+    currency: listingBase.shape.currency.default('AZN'),
+    hasDocument: listingBase.shape.hasDocument.default(false),
+    mortgageAvailable: listingBase.shape.mortgageAvailable.default(false),
+    amenities: listingBase.shape.amenities.default([]),
+  }),
+);
 export const updateListingSchema = listingBase.partial();
 export const listingStatusActionSchema = z.object({ action: z.enum(['MARK_SOLD', 'ARCHIVE', 'RENEW', 'RESTORE']) });
 
@@ -251,6 +259,17 @@ export const bannerSchema = z.object({
   endsAt: z.string().datetime().nullable().optional(),
   sortOrder: z.number().int().default(0),
 });
+/** PATCH variant without defaults. */
+export const bannerUpdateSchema = z.object({
+  placement: z.enum(BANNER_PLACEMENTS as [string, ...string[]]),
+  title: z.string().min(1).max(120),
+  imageUrl: z.string().url(),
+  linkUrl: z.string().url(),
+  active: z.boolean(),
+  startsAt: z.string().datetime().nullable(),
+  endsAt: z.string().datetime().nullable(),
+  sortOrder: z.number().int(),
+}).partial();
 export const cmsPageSchema = z.object({
   slug: z.string().regex(/^[a-z0-9-]+$/),
   title: z.object({ az: z.string(), ru: z.string(), en: z.string() }),
