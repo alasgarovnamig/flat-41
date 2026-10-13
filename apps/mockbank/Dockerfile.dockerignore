@@ -1,0 +1,12 @@
+# BuildKit picks this up for `docker build -f apps/mockbank/Dockerfile .` (context = repo root)
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+!**/.env.example
+.git
+apps/mobile
+apps/web
+apps/admin
+**/*.log
+**/coverage
