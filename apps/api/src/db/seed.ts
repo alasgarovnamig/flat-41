@@ -4,6 +4,8 @@
  * Usage: pnpm db:seed
  */
 import bcrypt from 'bcryptjs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { and, eq, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import {
@@ -35,7 +37,41 @@ const between = (a: number, b: number) => Math.round(a + rand() * (b - a));
 const jitter = (v: number, spread = 0.008) => Math.round((v + (rand() - 0.5) * spread) * 1e6) / 1e6;
 
 // ───────────────────────────── Images (Unsplash) ─────────────────────────────
-const U = (id: string) => ({ url: `https://images.unsplash.com/photo-${id}?w=1600&q=80`, thumbUrl: `https://images.unsplash.com/photo-${id}?w=400&q=70` });
+/**
+ * SEED_IMAGES=local generates placeholder photos into the upload dir instead of hot-linking Unsplash
+ * (offline demos, CI, sandboxes where images.unsplash.com is unreachable).
+ */
+const LOCAL_IMAGES = process.env.SEED_IMAGES === 'local';
+const U = (id: string) =>
+  LOCAL_IMAGES
+    ? { url: `${config.apiPublicUrl}/uploads/seed/${id}.webp`, thumbUrl: `${config.apiPublicUrl}/uploads/seed/${id}_t.webp` }
+    : { url: `https://images.unsplash.com/photo-${id}?w=1600&q=80`, thumbUrl: `https://images.unsplash.com/photo-${id}?w=400&q=70` };
+
+async function generateLocalImages() {
+  const sharp = (await import('sharp')).default;
+  const dir = path.resolve(config.storage.uploadDir, 'seed');
+  await fs.mkdir(dir, { recursive: true });
+  const palette: Record<string, [string, string]> = {
+    interior: ['#E8DCCB', '#B08D6A'], building: ['#C9D6E3', '#5B7A99'], house: ['#D5E8D4', '#5E8B5A'],
+    office: ['#DDE3EA', '#4A5568'], land: ['#E9E4C9', '#8A7F3D'], commercial: ['#EADCF0', '#7C5A8C'],
+  };
+  for (const [kind, ids] of Object.entries(PHOTOS)) {
+    const [bg, fg] = palette[kind];
+    for (const [i, id] of ids.entries()) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${bg}"/><stop offset="1" stop-color="${fg}"/></linearGradient></defs>
+        <rect width="1600" height="1200" fill="url(#g)"/>
+        <g fill="#ffffff" fill-opacity="0.85" transform="translate(${560 + (i % 3) * 20},${330 + (i % 2) * 20})">
+          <path d="M240 0 L480 200 L420 200 L420 440 L60 440 L60 200 L0 200 Z"/><rect x="200" y="290" width="80" height="150" fill="${fg}"/>
+        </g>
+        <text x="800" y="980" font-family="sans-serif" font-size="64" fill="#ffffff" text-anchor="middle" fill-opacity="0.9">EvTap · ${kind}</text>
+      </svg>`;
+      const img = sharp(Buffer.from(svg));
+      await img.clone().webp({ quality: 80 }).toFile(path.join(dir, `${id}.webp`));
+      await img.clone().resize(400).webp({ quality: 70 }).toFile(path.join(dir, `${id}_t.webp`));
+    }
+  }
+}
 const PHOTOS = {
   interior: [
     '1502672260266-1c1ef2d93688', '1560448204-e02f11c3d0e2', '1522708323590-d24dbb6b0267', '1493809842364-78817add7ffb',
@@ -273,6 +309,10 @@ const BANNERS = [
 async function main() {
   const pool = createPool();
   const db = drizzle(pool, { schema });
+  if (LOCAL_IMAGES) {
+    await generateLocalImages();
+    console.log(`✔ placeholder images generated in ${config.storage.uploadDir}/seed`);
+  }
 
   // Settings & catalog defaults (same as SettingsService.ensureDefaults) so the seed works standalone.
   await db.insert(schema.settings).values({ key: 'platform', value: DEFAULT_SETTINGS }).onConflictDoNothing();

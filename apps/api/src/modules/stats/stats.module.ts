@@ -10,6 +10,11 @@ import { ZodPipe } from '../../common/zod.pipe';
 const daysSchema = z.object({ days: z.coerce.number().int().min(1).max(365).default(30) });
 /** Net revenue of a payment row (succeeded or partially refunded). */
 const NET = sql.raw(`case when status in ('SUCCEEDED','PARTIALLY_REFUNDED') then amount - refunded_amount else 0 end`);
+/**
+ * Recognised revenue: excludes WALLET_TOPUP — top-ups are customer balance (a liability) and become revenue only
+ * when spent on services (those WALLET-method payments are counted). Same rule as GET /admin/stats/revenue.
+ */
+const REV = sql.raw(`case when status in ('SUCCEEDED','PARTIALLY_REFUNDED') and purpose <> 'WALLET_TOPUP' then amount - refunded_amount else 0 end`);
 const PAID_AT = sql.raw(`coalesce(paid_at, created_at)`);
 
 type Row = Record<string, unknown>;
@@ -35,9 +40,9 @@ export class StatsService {
         count(*) filter (where created_at >= date_trunc('day', now()))::int as new_today
       from listings`);
     const r = await one<{ today: number; last30d: number; total: number; succeeded_30d: number; failed_30d: number }>(db, sql`
-      select coalesce(sum(${NET}) filter (where ${PAID_AT} >= date_trunc('day', now())), 0)::int as today,
-        coalesce(sum(${NET}) filter (where ${PAID_AT} >= now() - interval '30 days'), 0)::int as last30d,
-        coalesce(sum(${NET}), 0)::int as total,
+      select coalesce(sum(${REV}) filter (where ${PAID_AT} >= date_trunc('day', now())), 0)::int as today,
+        coalesce(sum(${REV}) filter (where ${PAID_AT} >= now() - interval '30 days'), 0)::int as last30d,
+        coalesce(sum(${REV}), 0)::int as total,
         count(*) filter (where status in ('SUCCEEDED','PARTIALLY_REFUNDED','REFUNDED') and created_at >= now() - interval '30 days')::int as succeeded_30d,
         count(*) filter (where status = 'FAILED' and created_at >= now() - interval '30 days')::int as failed_30d
       from payments`);
