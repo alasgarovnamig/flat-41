@@ -5,14 +5,19 @@ bina.az / ev10.az (AZ), myhome.ge / home.ss.ge (GE) ve Airbnb analiz edilerek ta
 
 | Parça | Teknoloji | Klasör | Port |
 |---|---|---|---|
-| Backend API | NestJS 11, PostgreSQL, Drizzle ORM, socket.io | `apps/api` | 4000 |
-| Kullanıcı web sitesi | Next.js 16 (SSR/SEO), Tailwind, Leaflet | `apps/web` | 3000 |
+| Backend API | **Go 1.26**, chi, pgx, goose, PostgreSQL, WebSocket | `apps/api` | 4000 |
+| Kullanıcı web sitesi | Next.js 16 (SSR/SEO), Tailwind v4, Leaflet | `apps/web` | 3000 |
 | Admin paneli | Vite + React 19, TanStack Query, Recharts | `apps/admin` | 3001 |
-| iOS + Android uygulaması | Expo (React Native), expo-router | `apps/mobile` | 8081 |
-| Mock banka (ödeme ağ geçidi) | Express + PostgreSQL | `apps/mockbank` | 4100 |
-| Ortak sözleşme | TypeScript tipleri, zod şemaları, fiyat kataloğu | `packages/shared` | – |
+| iOS uygulaması | **Swift 6 + SwiftUI** (iOS 17+), XcodeGen | `apps/ios` | – |
+| Android uygulaması | **Kotlin + Jetpack Compose** (Material 3) | `apps/android` | – |
+| Mock banka (ödeme ağ geçidi) | **Go**, chi, PostgreSQL | `apps/mockbank` | 4100 |
+| Ortak sözleşme | TypeScript tipleri, zod şemaları, fiyat kataloğu, hata kodları | `packages/shared` | – |
+| Tasarım token'ları | tokens.json → CSS / TS / SwiftUI / Compose | `packages/design-tokens` | – |
+| Sözleşme test paketi | 206 test, 125 uç nokta, gerçek banka + WebSocket | `tests/contract` | – |
 
-📄 Belgeler: [Mimari](docs/ARCHITECTURE.md) · [Pazar analizi ve gelir modeli](docs/BUSINESS_MODEL.md) · [Mock banka sözleşmesi](docs/MOCKBANK.md) · [Mobil uygulama](apps/mobile/README.md)
+📄 Belgeler: [Mimari](docs/ARCHITECTURE.md) · [Tasarım sistemi](docs/design/DESIGN_SYSTEM.md) · [Pazar analizi ve gelir modeli](docs/BUSINESS_MODEL.md) · [Mock banka sözleşmesi](docs/MOCKBANK.md) · [Go API](apps/api/README.md) · [iOS](apps/ios/README.md) · [Android](apps/android/README.md)
+
+🎨 Tasarım: "Soft Monochrome" — referans görseller `docs/design/reference/` (Aurex Living stili), ui-ux-pro-max kontrol listesiyle doğrulandı.
 
 ---
 
@@ -20,47 +25,49 @@ bina.az / ev10.az (AZ), myhome.ge / home.ss.ge (GE) ve Airbnb analiz edilerek ta
 
 ```bash
 docker compose up --build -d
-docker compose exec api node dist/db/seed.js     # demo veriler (63 ilan, ajanslar, kullanıcılar)
+docker compose exec api /app/seed                # demo veriler (63 ilan, ajanslar, kullanıcılar)
 ```
 
 | Adres | |
 |---|---|
 | http://localhost:3000 | Web sitesi |
 | http://localhost:3001 | Admin paneli — `admin@evtap.az` / `Admin12345!` (moderatör: `moderator@evtap.az` / `Moder12345!`) |
-| http://localhost:4000/api/docs | Swagger API belgeleri |
+| http://localhost:4000/api/v1/health | API (sözleşme: `packages/shared/src/api.ts`) |
 | http://localhost:4100/admin | Mock banka yönetimi — `admin` / `admin` |
 
 Giriş: herhangi bir telefon numarası + SMS kodu **`111111`** (geliştirme modu). Demo kullanıcıların şifresi `Demo12345!`.
 
 ## 💻 Geliştirme ortamı (Docker'sız)
 
-Gereksinimler: Node 22+, pnpm 10, PostgreSQL 16.
+Gereksinimler: Go 1.26+, Node 22+, pnpm 10, PostgreSQL 16.
 
 ```bash
-pnpm install
-pnpm build:shared                                   # ortak paketi derle (değiştirdikçe tekrar)
+pnpm install && pnpm build:shared && pnpm --filter @evtap/design-tokens build
+createdb evtap && createdb mockbank                 # kullanıcı/şifre: evtap/evtap
 
-# Veritabanları
-createdb evtap && createdb mockbank                 # kullanıcı/şifre: evtap/evtap (bkz. .env.example)
-
-# API
+# API (Go) — migration'lar açılışta otomatik uygulanır
 cp apps/api/.env.example apps/api/.env
-pnpm --filter @evtap/api db:migrate                 # veya geliştirirken: db:push
-pnpm --filter @evtap/api db:seed                    # SEED_IMAGES=local → internetsiz demo fotoğraflar
+pnpm db:seed                                        # = go run ./cmd/seed  (SEED_IMAGES=local → internetsiz demo fotoğraflar)
 pnpm dev:api                                        # :4000
 
-pnpm dev:mockbank                                   # :4100
+pnpm dev:mockbank                                   # :4100 (Go)
 pnpm dev:web                                        # :3000
 pnpm dev:admin                                      # :3001  (API'siz deneme: pnpm --filter @evtap/admin dev:mock)
-pnpm dev:mobile                                     # Expo; Android emülatörde EXPO_PUBLIC_API_URL=http://10.0.2.2:4000
 ```
 
-Testler ve kontroller:
+Mobil:
+```bash
+# iOS (Mac + Xcode 16)
+brew install xcodegen && cd apps/ios && xcodegen && open EvTap.xcodeproj
+# Android: Android Studio ile apps/android klasörünü açın (local.properties → MAPS_API_KEY=...)
+```
+
+Testler:
 
 ```bash
-pnpm -r typecheck
-pnpm --filter @evtap/mockbank test                  # 38 test
-pnpm --filter @evtap/api test                       # 37 test (canlı testler için API çalışıyor olmalı: API_URL=http://localhost:4000)
+(cd apps/api && go test ./...)                      # Go birim + entegrasyon testleri (gerçek PostgreSQL)
+(cd apps/mockbank && go test ./...)                 # 74 test
+pnpm test:contract                                  # API + banka çalışırken: 206 sözleşme testi (API_URL, BANK_URL)
 ```
 
 ## ✨ Özellikler
@@ -71,7 +78,7 @@ pnpm --filter @evtap/api test                       # 37 test (canlı testler i�
 - İlan detayı: galeri, telefon göster (sayılır), mesaj, favori, paylaş, şikâyet, benzer ilanlar, **ipotek hesaplayıcı + banka başvurusu**
 - 6 adımlı ilan verme sihirbazı (harita pini, foto yükleme/sıralama), ilan yönetimi (satıldı, arşiv, yenile, istatistik)
 - **Günlük kira rezervasyonu**: müsaitlik takvimi, anlık fiyat teklifi, kart/cüzdan ödemesi, iptal politikası, yorum + ev sahibi cevabı, ev sahibi takvimi
-- Gerçek zamanlı mesajlaşma (socket.io, "yazıyor…", okundu), bildirimler + mobil push (Expo)
+- Gerçek zamanlı mesajlaşma (WebSocket, "yazıyor…", okundu, çoklu cihaz), bildirimler + native push (APNs / FCM)
 - Cüzdan (bonuslu yükleme), ödeme geçmişi, öne çıkarma, kurumsal abonelik, ajans sayfası / temsilciler / istatistik, hesap silme
 
 **Admin paneli**
@@ -108,11 +115,23 @@ banka ödeme sayfası → 3-D Secure (kod `111111`) → imzalı webhook (HMAC-SH
 | `4000 0000 0000 0002` | Red — DO_NOT_HONOR |
 | `4000 0000 0000 9995` | Red — yetersiz bakiye |
 
-**Gerçek bankaya geçiş:** `apps/api/src/modules/payments/providers/` içinde yeni bir sağlayıcı sınıfı yazıp `providers/index.ts`'e ekleyin ve `PAYMENT_PROVIDER` env değerini değiştirin. Başka hiçbir kod değişmez.
+**Gerçek bankaya geçiş:** `apps/api/internal/modules/payments/providers/` içinde `PaymentProvider` arayüzünü uygulayan yeni bir sağlayıcı yazın ve `PAYMENT_PROVIDER` env değerini değiştirin. Başka hiçbir kod değişmez.
 
-## 📱 Mobil uygulama yayını
+## 📱 Mobil uygulamalar (native)
 
-Ayrıntılar `apps/mobile/README.md`'de. Özet: `eas build` ile development/preview/production profilleri; Android için Google Maps anahtarı (`GOOGLE_MAPS_ANDROID_API_KEY`), push için `EAS_PROJECT_ID` + FCM/APNs kimlik bilgileri; App Store gönderimi için `eas.json` içindeki `ascAppId`.
+| | iOS | Android |
+|---|---|---|
+| Dil / UI | Swift 6, SwiftUI, iOS 17+ | Kotlin, Jetpack Compose (M3 üzerine özel tema) |
+| Proje | XcodeGen `project.yml` + `EvTapCore` Swift paketi | Gradle KTS, `:core` (JVM) + `:app` |
+| Ağ | URLSession async/await, Keychain, WebSocket | Retrofit + OkHttp, şifreli token deposu, OkHttp WebSocket |
+| Harita | MapKit | Google Maps Compose (`MAPS_API_KEY`) |
+| Ödeme | ASWebAuthenticationSession → `evtap://payment/result` | Custom Tabs → `evtap://payment/result` |
+| Push | APNs (backend: `PUSH_PROVIDER=native`, `APNS_*`) | FCM (`google-services.json`, backend `FCM_SERVICE_ACCOUNT_JSON`) |
+
+⚠️ Bu depo ortamında Xcode ve Android SDK erişimi olmadığı için uygulamalar burada **derlenmedi**. Kontrol edilenler:
+Swift dosyaları sözdizimi denetimi + çağrı/çeviri kontrolleri; Android `:core` modülü 35 JVM testi + uygulama kodu
+masaüstü Compose ile tip denetimi. İlk Xcode / Android Studio derlemesinde küçük düzeltmeler gerekebilir.
+Kurulum adımları: `apps/ios/README.md`, `apps/android/README.md`.
 
 ## 🗺️ Yol haritası / bilinen eksikler
 
@@ -120,6 +139,7 @@ Ayrıntılar `apps/mobile/README.md`'de. Özet: `eas build` ile development/prev
 - Doğrulama hizmeti şu an ödeme anında rozeti veriyor; saha ziyareti iş akışı eklenecek
 - GEL rezervasyonlarında kur dönüşümü (cüzdan AZN)
 - Cron işleri tek sunucu için; yatay ölçeklemede dağıtık kilit (advisory lock) gerekir
+- Native uygulamaların gerçek cihazda derlenip test edilmesi; S3 depolama sürücüsü (şu an yerel disk)
 - Gerçek ikon / splash / marka görselleri, mağaza metinleri
 - Admin'de bazı uç noktalar sunucu tarafı sıralama desteklemiyor (sayfa içi sıralama)
 
