@@ -1,33 +1,24 @@
-# EvTap API. Build from the repository root:
+# EvTap API (Go). Build from the repository root:
 #   docker build -f docker/api.Dockerfile -t evtap/api .
-FROM node:22-alpine AS base
-ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH CI=true
-RUN corepack enable && corepack prepare pnpm@10.28.0 --activate
-WORKDIR /repo
+FROM golang:1.26-alpine AS build
+WORKDIR /src
+COPY apps/api/go.mod apps/api/go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
+COPY apps/api/ ./
+RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/api ./cmd/api && \
+    CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/migrate ./cmd/migrate && \
+    CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/seed ./cmd/seed
 
-FROM base AS build
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc tsconfig.base.json ./
-COPY packages/shared/package.json packages/shared/
-COPY apps/api/package.json apps/api/
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --filter @evtap/api...
-COPY packages/shared packages/shared
-COPY apps/api apps/api
-RUN pnpm --filter @evtap/shared build && pnpm --filter @evtap/api build
-# Self-contained production node_modules (incl. @evtap/shared dist)
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm --filter @evtap/api deploy --prod --legacy /out
-
-FROM node:22-alpine AS runtime
-ENV NODE_ENV=production PORT=4000 UPLOAD_DIR=/data/uploads
-WORKDIR /app
-COPY --from=build --chown=node:node /out/node_modules ./node_modules
-COPY --from=build --chown=node:node /repo/apps/api/package.json ./package.json
-COPY --from=build --chown=node:node /repo/apps/api/dist ./dist
-COPY --from=build --chown=node:node /repo/apps/api/drizzle ./drizzle
-RUN mkdir -p /data/uploads && chown -R node:node /data
-USER node
+FROM alpine:3.22
+# libwebp: fast native WebP encoding for uploads (falls back to a bundled WASM encoder when missing)
+RUN apk add --no-cache ca-certificates tzdata libwebp && adduser -D -u 10001 evtap && mkdir -p /data/uploads && chown evtap /data/uploads
+ENV PORT=4000 UPLOAD_DIR=/data/uploads NODE_ENV=production
+COPY --from=build /out/ /app/
+USER evtap
 EXPOSE 4000
 VOLUME ["/data/uploads"]
-HEALTHCHECK --interval=15s --timeout=3s --start-period=20s --retries=3 \
+HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
   CMD wget -qO- "http://127.0.0.1:${PORT}/api/v1/health" >/dev/null || exit 1
-# Apply migrations, then start. Seed demo data manually: docker compose exec api node dist/db/seed.js
-CMD ["sh", "-c", "node dist/db/migrate.js && node dist/main.js"]
+# Migrations run automatically on start. Demo data: docker compose exec api /app/seed
+ENTRYPOINT ["/app/api"]

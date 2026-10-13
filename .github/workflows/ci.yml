@@ -2,11 +2,11 @@ name: CI
 
 on:
   push:
-    branches: [main, "claude/**"]
+    branches: [main, master, test, "claude/**"]
   pull_request:
 
 jobs:
-  build-test:
+  backend-go:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -19,7 +19,58 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U evtap" --health-interval 5s --health-timeout 5s --health-retries 10
     env:
-      DATABASE_URL: postgres://evtap:evtap@localhost:5432/evtap
+      PGPASSWORD: evtap
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache-dependency-path: |
+            apps/api/go.sum
+            apps/mockbank/go.sum
+      - name: Create databases
+        run: |
+          for d in evtap_go_money_test evtap_go_comm mockbank mockbank_go_test evtap_e2e mockbank_e2e; do
+            psql -h localhost -U evtap -d evtap -c "create database $d;"
+          done
+      - name: API — vet & unit/integration tests
+        working-directory: apps/api
+        # test packages use their own default databases (evtap_go_comm, evtap_go_money_test, temp DBs for markettest)
+        run: go vet ./... && go test ./...
+      - name: Mock bank — vet & tests
+        working-directory: apps/mockbank
+        run: go vet ./... && go test ./...
+      - name: Build binaries
+        run: |
+          (cd apps/api && go build -o /tmp/api ./cmd/api && go build -o /tmp/seed ./cmd/seed)
+          (cd apps/mockbank && go build -o /tmp/bank ./cmd/mockbank)
+      - name: Start stack (API + mock bank)
+        run: |
+          export DATABASE_URL=postgres://evtap:evtap@localhost:5432/evtap_e2e OTP_DEV_CODE=111111 CORS_ORIGINS='*' \
+                 MOCKBANK_URL=http://localhost:4100 MOCKBANK_PUBLIC_URL=http://localhost:4100 UPLOAD_DIR=/tmp/uploads
+          SEED_IMAGES=local /tmp/seed
+          nohup /tmp/api > /tmp/api.log 2>&1 &
+          PORT=4100 PUBLIC_URL=http://localhost:4100 DATABASE_URL=postgres://evtap:evtap@localhost:5432/mockbank_e2e nohup /tmp/bank > /tmp/bank.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4000/api/v1/health && curl -sf http://localhost:4100/health && break; sleep 1; done
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:shared
+      - name: Contract test suite (every endpoint, real bank, WebSocket)
+        env:
+          API_URL: http://localhost:4000
+          BANK_URL: http://localhost:4100
+          DATABASE_URL: postgres://evtap:evtap@localhost:5432/evtap_e2e
+        run: pnpm --filter @evtap/contract-tests test
+      - name: Logs on failure
+        if: failure()
+        run: tail -100 /tmp/api.log /tmp/bank.log || true
+
+  frontends:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -28,27 +79,6 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build:shared
-      - name: Create mock bank test database
-        run: PGPASSWORD=evtap psql -h localhost -U evtap -c "create database mockbank;" -c "create database mockbank_dev;"
-      - run: pnpm -r typecheck
-      - run: pnpm --filter @evtap/api build
-      - run: pnpm --filter @evtap/mockbank build
-      - run: pnpm --filter @evtap/web build
+      - run: pnpm build:shared && pnpm --filter @evtap/design-tokens build
+      - run: pnpm --filter @evtap/web typecheck && pnpm --filter @evtap/web build
       - run: pnpm --filter @evtap/admin build
-      - run: pnpm --filter @evtap/api db:migrate
-      - run: pnpm --filter @evtap/api db:seed
-        env: { SEED_IMAGES: local }
-      - run: pnpm --filter @evtap/mockbank test
-        env: { DATABASE_URL: postgres://evtap:evtap@localhost:5432/mockbank_dev }
-      - name: Start API for live tests
-        working-directory: apps/api
-        run: |
-          nohup node dist/main.js > /tmp/api.log 2>&1 &
-          for i in $(seq 1 30); do curl -sf http://localhost:4000/api/v1/health && break; sleep 1; done
-      - run: pnpm --filter @evtap/api test
-        env: { API_URL: http://localhost:4000 }
-      - name: API log on failure
-        if: failure()
-        run: tail -100 /tmp/api.log || true
-      - run: pnpm --filter @evtap/mobile exec expo export --platform android --output-dir /tmp/expo-android
