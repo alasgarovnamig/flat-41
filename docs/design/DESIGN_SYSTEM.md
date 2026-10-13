@@ -62,7 +62,7 @@ with a geometric grotesk — the reference wins on visual direction, the skill w
   PropertyCards, StatCards in a 2-column grid, floating glass TabBar.
 
 ## 4. Accessibility & UX rules (ui-ux-pro-max checklist)
-- Text contrast ≥ 4.5:1 (muted `#8E8E93` only for ≥ 12px secondary text on light surfaces; never for prices/CTAs)
+- Text contrast ≥ 4.5:1 in both themes: `muted` #646469 is ≥ 4.8:1 on canvas/surfaces; status texts are darkened for their tinted backgrounds; text on the peach `accent` uses `onAccent`
 - Touch targets ≥ 44×44; spacing ≥ 8px between targets
 - Visible focus ring on every interactive element (web); `accessibilityLabel` / `contentDescription` on icon buttons
 - `prefers-reduced-motion` / iOS Reduce Motion / Android animator scale respected (no scale/translate animations)
