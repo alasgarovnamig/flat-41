@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -28,10 +29,7 @@ func New(d *app.Deps, modules []app.Module) http.Handler {
 	r.Use(requestLogger)
 	r.Use(middleware.Recoverer)
 	r.Use(corsHandler(d.Cfg.CORSOrigins))
-	r.Use(httprate.Limit(300, time.Minute, httprate.WithKeyFuncs(httprate.KeyByIP),
-		httprate.WithLimitHandler(func(w http.ResponseWriter, r *http.Request) {
-			httpx.WriteError(w, r, httpx.E(http.StatusTooManyRequests, "RATE_LIMITED", "Too many requests"))
-		})))
+	r.Use(globalRateLimit())
 	r.Use(d.Signer.Authenticate)
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
@@ -66,6 +64,24 @@ func New(d *app.Deps, modules []app.Module) http.Handler {
 		})
 	}
 	return r
+}
+
+// globalRateLimit allows 300 req/min per IP; bank webhooks (server-to-server, signed) are exempt.
+func globalRateLimit() func(http.Handler) http.Handler {
+	limiter := httprate.Limit(300, time.Minute, httprate.WithKeyFuncs(httprate.KeyByIP),
+		httprate.WithLimitHandler(func(w http.ResponseWriter, r *http.Request) {
+			httpx.WriteError(w, r, httpx.E(http.StatusTooManyRequests, "RATE_LIMITED", "Too many requests"))
+		}))
+	return func(next http.Handler) http.Handler {
+		limited := limiter(next)
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasPrefix(r.URL.Path, APIPrefix+"/payments/webhook/") {
+				next.ServeHTTP(w, r)
+				return
+			}
+			limited.ServeHTTP(w, r)
+		})
+	}
 }
 
 func corsHandler(origins []string) func(http.Handler) http.Handler {
