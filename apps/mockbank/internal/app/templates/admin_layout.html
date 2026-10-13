@@ -1,0 +1,13 @@
+{{define "layout"}}<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>{{.Title}} · Mock Bank admin</title><style>{{.CSS}}</style></head>
+<body><header><div class="hin"><a class="logo" href="/admin">{{template "logo"}}<span>Mock Bank <small>back office</small></span></a>
+<nav><a href="/admin/orders" class="{{if eq .Active "orders"}}on{{end}}">Orders</a><a href="/admin/tokens" class="{{if eq .Active "tokens"}}on{{end}}">Saved cards</a><a href="/admin/merchants" class="{{if eq .Active "merchants"}}on{{end}}">Merchants</a></nav></div></header>
+<main>{{with .Flash}}<div class="flash {{.Kind}}">{{.Text}}</div>{{end}}{{template "body" .}}</main></body></html>{{end}}
+
+{{define "logo"}}<svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#0E7C66"/><path d="M16 6 6 11v2h20v-2L16 6Zm-7 9v8H7v3h18v-3h-2v-8h-3v8h-2.5v-8h-3v8H12v-8H9Z" fill="#fff"/></svg>{{end}}
+
+{{define "badge"}}<span class="b s-{{.}}">{{statusLabel .}}</span>{{end}}
+
+{{define "csrf"}}<input type="hidden" name="csrf" value="{{.}}">{{end}}
+
+{{define "merchantOptions"}}{{$sel := .Selected}}{{range .Merchants}}<option value="{{.ID}}" {{if eq .ID $sel}}selected{{end}}>{{.Name}} ({{.ID}})</option>{{end}}{{end}}

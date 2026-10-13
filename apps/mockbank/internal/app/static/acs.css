@@ -1,0 +1,21 @@
+
+.acs{max-width:440px;margin:0 auto;padding:16px 12px 32px}
+.acs-box{background:#fff;border:1px solid #D9DEE5;border-radius:6px;overflow:hidden;box-shadow:0 2px 10px rgba(16,24,40,.06)}
+.acs-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #E4E7EC;background:#FAFBFC}
+.acs-head .bank{display:flex;align-items:center;gap:8px;font-weight:700;color:#0F2742}
+.acs-head .schemes2{display:flex;gap:6px}
+.acs-head .schemes2 span{font-size:10px;font-weight:800;font-style:italic;padding:3px 6px;border-radius:3px;letter-spacing:.3px}
+.acs-head .vs{background:#1A1F71;color:#fff}.acs-head .mc{background:#111;color:#F79E1B}
+.acs-body{padding:18px}
+.acs-body h1{font-size:18px;margin:0 0 6px;color:#0F2742}
+.acs-body p.lead{color:#475467;font-size:14px;margin:0 0 16px}
+.acs-table{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:18px}
+.acs-table td{padding:7px 0;border-bottom:1px solid #F2F4F7}
+.acs-table td:first-child{color:#667085;width:44%}
+.acs-table td:last-child{font-weight:600;text-align:right}
+.otp{height:54px;font-size:24px;letter-spacing:10px;text-align:center;font-variant-numeric:tabular-nums}
+.acs-links{display:flex;justify-content:space-between;margin-top:12px;font-size:13px}
+.linkbtn{background:none;border:0;color:#175CD3;padding:6px 0;font:inherit;font-size:13px;cursor:pointer;text-decoration:underline}
+.linkbtn.muted{color:#667085}
+.acs-foot{padding:10px 18px;border-top:1px solid #E4E7EC;background:#FAFBFC;font-size:11px;color:#98A2B3;text-align:center}
+.btn-acs{background:#0F2742;color:#fff}.btn-acs:hover{background:#163A5F}

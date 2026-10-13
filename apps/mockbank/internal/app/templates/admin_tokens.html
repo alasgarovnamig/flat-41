@@ -1,0 +1,16 @@
+{{define "body"}}<h1>Saved cards <span class="muted" style="font-size:14px;font-weight:500">{{len .Tokens}}</span></h1>
+<div class="panel"><form class="filters" method="get" action="/admin/tokens">
+  <input name="q" placeholder="Token / mask / customer id" value="{{.Filter.Q}}" style="min-width:260px">
+  <select name="merchant"><option value="">All merchants</option>{{template "merchantOptions" .MerchantOptions}}</select>
+  <button type="submit">Filter</button> <a class="btn sec" href="/admin/tokens">Reset</a>
+</form></div>
+<div class="panel"><p class="muted" style="margin-top:0">Turn on <b>Insufficient funds</b> to make the next <span class="mono">charge-token</span> calls with that card decline with <span class="mono">INSUFFICIENT_FUNDS</span> (test failed subscription renewals).</p>
+<table><thead><tr><th>Token</th><th>Merchant</th><th>Card</th><th>Customer</th><th>Created</th><th>Last used</th><th>Insufficient funds</th><th></th></tr></thead>
+<tbody>{{if not .Tokens}}<tr><td colspan="8" class="muted">No saved cards.</td></tr>{{end}}
+{{range .Tokens}}<tr>
+  <td class="mono">{{.Token}}</td><td>{{.MerchantID}}</td><td class="mono nowrap">{{.Mask}} · {{.Brand}}</td>
+  <td class="mono">{{.CustomerID}}</td><td class="nowrap muted">{{.Created}}</td><td class="nowrap muted">{{.LastUsed}}</td>
+  <td><form method="post" action="/admin/tokens/{{.Token}}/insufficient" class="inline">{{template "csrf" $.CSRF}}<input type="hidden" name="value" value="{{if .Insufficient}}0{{else}}1{{end}}">
+    <button type="submit" class="small {{if .Insufficient}}danger{{else}}sec{{end}}">{{if .Insufficient}}ON — turn off{{else}}OFF — turn on{{end}}</button></form></td>
+  <td><form method="post" action="/admin/tokens/{{.Token}}/delete" class="inline" onsubmit="return confirm('Delete this saved card?')">{{template "csrf" $.CSRF}}<button type="submit" class="small sec">Delete</button></form></td>
+</tr>{{end}}</tbody></table></div>{{end}}

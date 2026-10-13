@@ -1,0 +1,22 @@
+{{define "body"}}<h1>Orders <span class="muted" style="font-size:14px;font-weight:500">{{.Data.Total}} total</span></h1>
+<div class="panel"><form class="filters" method="get" action="/admin/orders">
+  <input name="q" placeholder="Order id / merchantOrderId / card" value="{{.Filter.Q}}" style="min-width:280px">
+  <select name="status"><option value="">All statuses</option>{{$st := .Filter.Status}}{{range .Statuses}}<option value="{{.}}" {{if eq . $st}}selected{{end}}>{{.}}</option>{{end}}</select>
+  <select name="merchant"><option value="">All merchants</option>{{template "merchantOptions" .MerchantOptions}}</select>
+  <button type="submit">Filter</button> <a class="btn sec" href="/admin/orders">Reset</a>
+</form></div>
+<div class="panel"><table>
+<thead><tr><th>Created</th><th>Order</th><th>Merchant</th><th>Merchant order id</th><th>Description</th><th class="num">Amount</th><th>Status</th><th>Card</th></tr></thead>
+<tbody>{{if not .Rows}}<tr><td colspan="8" class="muted">No orders found.</td></tr>{{end}}
+{{range .Rows}}<tr>
+  <td class="nowrap muted">{{.Created}}</td>
+  <td class="mono"><a href="/admin/orders/{{.ID}}">{{.ID}}</a>{{if .IsToken}} <span class="b s-CREATED">TOKEN</span>{{end}}</td>
+  <td>{{.MerchantID}}</td>
+  <td class="mono">{{.MerchantOrderID}}</td>
+  <td>{{.Description}}</td>
+  <td class="num">{{.Amount}}{{if .Refunded}}<div class="muted" style="font-size:12px">−{{.Refunded}}</div>{{end}}</td>
+  <td>{{template "badge" .Status}}{{if .DeclineCode}}<div class="muted mono" style="font-size:11px">{{.DeclineCode}}</div>{{end}}</td>
+  <td class="mono nowrap">{{.CardMask}}</td>
+</tr>{{end}}</tbody></table>
+<div class="pager">{{if .PrevLink}}<a class="btn sec" href="{{.PrevLink}}">← Prev</a>{{end}}<span class="muted">Page {{.Data.Page}} / {{.Pages}}</span>{{if .NextLink}}<a class="btn sec" href="{{.NextLink}}">Next →</a>{{end}}</div>
+</div>{{end}}

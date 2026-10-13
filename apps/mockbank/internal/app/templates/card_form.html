@@ -1,0 +1,60 @@
+{{define "body"}}<main>
+<section class="card">
+  <div class="summary">
+    <div class="avatar" aria-hidden="true">{{.Initial}}</div>
+    <div class="who"><div class="name">{{.MerchantName}}</div><div class="desc">{{.Description}}</div></div>
+    <div class="amount">{{.Amount}}</div>
+  </div>
+  <div class="meta"><span>{{.T "order"}}: {{.ShortOrderID}}</span><span>{{template "lock"}} <span class="timer" id="timer" data-end="{{.ExpiresAtMS}}"></span></span></div>
+</section>
+<section class="card">
+  {{if .Alert}}<div class="alert alert-err" role="alert">{{.Alert}}</div>{{end}}
+  <form id="payform" method="post" action="{{.PayAction}}" novalidate autocomplete="on">
+    <input type="hidden" name="nonce" value="{{.Nonce}}">
+    <div class="{{.FieldClass "number"}}">
+      <label for="number">{{.T "cardNumber"}}</label>
+      <div class="with-badge">
+        <input class="input mono" id="number" name="number" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000" maxlength="23" value="{{.Values.Number}}" required autofocus>
+        <span class="badge" id="brand" style="display:none"></span>
+      </div>
+      <div class="ferr">{{.FieldErr "number"}}</div>
+    </div>
+    <div class="row">
+      <div class="{{.FieldClass "expiry"}}">
+        <label for="expiry">{{.T "expiry"}}</label>
+        <input class="input mono" id="expiry" name="expiry" inputmode="numeric" autocomplete="cc-exp" placeholder="{{.T "expiryPlaceholder"}}" maxlength="5" value="{{.Values.Expiry}}" required>
+        <div class="ferr">{{.FieldErr "expiry"}}</div>
+      </div>
+      <div class="{{.FieldClass "cvv"}}">
+        <label for="cvv" title="{{.T "cvvHint"}}">{{.T "cvv"}}</label>
+        <input class="input mono" id="cvv" name="cvv" type="password" inputmode="numeric" autocomplete="cc-csc" placeholder="•••" maxlength="4" required>
+        <div class="ferr">{{.FieldErr "cvv"}}</div>
+      </div>
+    </div>
+    <div class="{{.FieldClass "holder"}}">
+      <label for="holder">{{.T "holder"}}</label>
+      <input class="input" id="holder" name="holder" autocomplete="cc-name" autocapitalize="characters" spellcheck="false" placeholder="{{.T "holderPlaceholder"}}" maxlength="60" value="{{.Values.Holder}}" required>
+      <div class="ferr">{{.FieldErr "holder"}}</div>
+    </div>
+    {{if .SaveCardOffered}}<label class="check"><input type="checkbox" name="saveCard" value="1" {{if .Values.SaveCard}}checked{{end}}><span>{{.T "saveCard"}}<span class="hint">{{.T "saveCardHint"}}</span></span></label>{{end}}
+    <button class="btn btn-primary" id="paybtn" type="submit">{{template "lock"}} {{.T "pay" "amount" .Amount}}</button>
+  </form>
+  <form method="post" action="{{.CancelAction}}">
+    <input type="hidden" name="nonce" value="{{.Nonce}}">
+    <button class="btn btn-ghost" type="submit">{{.T "cancel"}}</button>
+  </form>
+  <div class="note">{{template "lock"}}<span>{{.T "secureNote"}}</span></div>
+  <div class="schemes"><span>VISA</span><span>MASTERCARD</span><span>3-D SECURE</span><span>PCI DSS</span></div>
+</section>
+{{if not .IsProd}}<section class="card"><details class="tc" open>
+  <summary>🧪 {{.T "testCards"}}</summary>
+  <p>{{.T "testCardsHint"}}</p>
+  <table>
+    {{range .TestCards}}<tr data-pan="{{.PAN}}"><td class="pan">{{.Grouped}}</td><td>{{if eq .Kind "APPROVE"}}<span class="tag ok">{{$.T "outcomeFrictionless"}}</span>{{else if eq .Kind "3DS"}}<span class="tag ds">{{$.T "outcome3ds"}}</span>{{else}}<span class="tag no">{{$.T "outcomeDeclined"}} · {{.Code}}</span>{{end}}</td></tr>{{end}}
+    <tr><td colspan="2" style="color:#6B7280;font-size:12px">{{.T "outcomeOther"}} → <span class="tag ds">{{.T "outcome3ds"}}</span></td></tr>
+  </table>
+</details></section>{{end}}
+<div class="footer">{{.T "securedBy"}}</div>
+</main>
+<script type="application/json" id="i18n">{{.I18nJSON}}</script>
+<script>{{.Script}}</script>{{end}}

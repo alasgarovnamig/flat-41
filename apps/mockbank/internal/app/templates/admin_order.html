@@ -1,0 +1,53 @@
+{{define "body"}}<p><a href="/admin/orders">← Orders</a></p>
+<h1><span class="mono">{{.Order.ID}}</span> {{template "badge" .Order.Status}} <span>{{.Amount}}</span></h1>
+<div class="cols"><div>
+<div class="panel"><h2>Details</h2><dl class="kv grid">
+  {{range .Fields}}<div><dt>{{.Label}}</dt><dd class="{{if .Mono}}mono{{end}}">{{if .Value}}{{.Value}}{{else}}<span class="muted">—</span>{{end}}</dd></div>
+  {{end}}{{with .CheckoutURL}}<div><dt>Checkout page</dt><dd class="mono"><a href="{{.}}" target="_blank" rel="noopener">{{.}}</a></dd></div>{{end}}
+</dl></div>
+
+<div class="panel"><h2>Webhooks</h2>
+{{if not .Webhooks}}<p class="muted">No webhooks sent{{if not .HasCallback}} (no callbackUrl){{end}}.</p>{{else}}<table>
+<thead><tr><th>Created</th><th>Event</th><th>Status</th><th class="num">Attempts</th><th>Last HTTP</th><th>Next attempt</th></tr></thead>
+<tbody>{{range .Webhooks}}<tr><td class="nowrap muted">{{.Created}}</td><td class="mono">{{.Event}}</td><td>{{template "badge" .Status}}</td><td class="num">{{.Attempts}}</td><td>{{.LastHTTP}}</td><td class="nowrap muted">{{.Next}}</td></tr>{{end}}</tbody></table>{{end}}
+<h2 style="margin-top:16px">Delivery attempts</h2>
+{{if not .Deliveries}}<p class="muted">No attempts yet.</p>{{else}}<table>
+<thead><tr><th>Time</th><th>Event</th><th class="num">#</th><th>Response</th><th class="num">Duration</th><th>Details</th></tr></thead>
+<tbody>{{range .Deliveries}}<tr>
+  <td class="nowrap muted">{{.Created}}</td>
+  <td class="mono">{{.Event}}</td>
+  <td class="num">{{.Attempt}}</td>
+  <td>{{if .HasStatus}}<span class="b {{if .OK}}s-DELIVERED{{else}}s-FAILED{{end}}">HTTP {{.Status}}</span>{{else}}<span class="b s-FAILED">ERROR</span>{{end}}{{if .Error}}<div class="muted" style="font-size:12px">{{.Error}}</div>{{end}}</td>
+  <td class="num">{{.DurationMS}} ms</td>
+  <td><div class="mono muted" style="font-size:11px">{{.URL}}</div>
+    <details><summary>Response body</summary><pre>{{.ResponseBody}}</pre></details>
+    <details><summary>Request body</summary><pre>{{.RequestBody}}</pre></details></td>
+</tr>{{end}}</tbody></table>{{end}}
+</div>
+
+<div class="panel"><details><summary style="font-size:14px">Order JSON (as returned by the API)</summary><pre>{{.JSON}}</pre></details></div>
+</div>
+
+<div>
+<div class="panel"><h2>Actions</h2>
+  <form method="post" action="/admin/orders/{{.Order.ID}}/resend" class="actions">{{template "csrf" .CSRF}}
+    <button type="submit" class="sec" {{if not .ResendEvent}}disabled{{end}}>↻ Resend webhook{{if .ResendEvent}} ({{.ResendEvent}}){{end}}</button>
+  </form>
+  <hr style="border:0;border-top:1px solid #F2F4F7;margin:14px 0">
+  <form method="post" action="/admin/orders/{{.Order.ID}}/refund">{{template "csrf" .CSRF}}
+    <div style="font-weight:600;margin-bottom:6px">Refund</div>
+    {{if .Refundable}}<div class="actions" style="margin-bottom:8px">
+          <input name="amount" placeholder="Amount, e.g. {{.RemainingMajor}}" style="width:170px" inputmode="decimal">
+          <span class="muted">{{.Order.Currency}} · leave empty for full remainder ({{.Remaining}})</span></div>
+        <div class="actions"><input name="reason" placeholder="Reason (optional)" style="flex:1;min-width:160px"><button type="submit" class="danger" onclick="return confirm('Refund this order?')">Refund</button></div>{{else}}<p class="muted" style="margin:0">Only APPROVED / PARTIALLY_REFUNDED orders can be refunded.</p>{{end}}
+  </form>
+</div>
+
+<div class="panel"><h2>Refunds</h2>
+{{if not .Refunds}}<p class="muted">None.</p>{{else}}<table><tbody>{{range .Refunds}}<tr><td class="mono">{{.ID}}<div class="muted" style="font-size:11px">{{.Created}} · {{.Source}}</div></td><td>{{.Reason}}</td><td class="num">{{.Amount}}</td></tr>{{end}}</tbody></table>{{end}}
+</div>
+
+<div class="panel"><h2>Timeline</h2><ul class="timeline">
+{{range .Timeline}}<li><div class="t">{{.Created}}</div><span class="ty">{{.Type}}</span>{{.Message}}</li>{{end}}
+</ul></div>
+</div></div>{{end}}

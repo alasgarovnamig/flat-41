@@ -1,0 +1,13 @@
+{{define "body"}}<main>
+<section class="card result">
+  <div class="ricon {{.Kind}}">{{if eq .Kind "ok"}}{{template "icon-ok"}}{{else if eq .Kind "no"}}{{template "icon-no"}}{{else}}{{template "icon-neutral"}}{{end}}</div>
+  <h1>{{.Title}}</h1>
+  <div class="big">{{.Amount}}</div>
+  {{if .Subtitle}}<p class="sub">{{.Subtitle}}</p>{{end}}
+  <table class="kv">{{range .Rows}}<tr><td>{{.K}}</td><td>{{.V}}</td></tr>{{end}}</table>
+  {{if .AutoRedirect}}<div class="progress"><i></i></div><div class="redir">{{.T "redirecting" "merchant" .MerchantName}}</div>{{end}}
+  <a class="btn btn-primary" id="back" href="{{.ReturnHref}}">{{.T "returnTo" "merchant" .MerchantName}}</a>
+</section>
+<div class="footer">{{.T "securedBy"}}</div>
+</main>
+{{if .AutoRedirect}}<script>setTimeout(function(){location.replace(document.getElementById('back').href)},2000)</script>{{end}}{{end}}

@@ -1,0 +1,5 @@
+{{define "body"}}<h1>Merchants</h1>
+<div class="panel"><p class="muted" style="margin-top:0">Configured via the <span class="mono">MERCHANTS</span> env (<span class="mono">id:secret:name</span>, comma-separated). Requests and webhooks are signed with <span class="mono">hex(HMAC_SHA256(secret, timestamp + "." + rawBody))</span>.</p>
+<table><thead><tr><th>Id</th><th>Name</th><th>Secret</th><th class="num">Orders</th><th class="num">Paid</th><th class="num">Saved cards</th><th>Since</th></tr></thead>
+<tbody>{{range .Merchants}}<tr><td class="mono"><a href="/admin/orders?merchant={{.ID}}">{{.ID}}</a></td><td>{{.Name}}</td><td class="mono">{{.Secret}}</td>
+  <td class="num">{{.OrderCount}}</td><td class="num">{{.ApprovedCount}}</td><td class="num"><a href="/admin/tokens?merchant={{.ID}}">{{.TokenCount}}</a></td><td class="muted nowrap">{{.Since}}</td></tr>{{end}}</tbody></table></div>{{end}}
