@@ -1,7 +1,45 @@
 import type { ListingCard, Locale } from '@evtap/shared';
 import { getCity, getDistrict, getMetro, localized } from '@evtap/shared';
 
-export const cn = (...c: (string | false | null | undefined | 0)[]) => c.filter(Boolean).join(' ');
+/**
+ * Utility groups where a later class must replace an earlier one with the same variant prefix
+ * (e.g. a component's base `inline-flex` vs. a caller's `hidden lg:inline-flex`, or `relative` vs. `absolute`).
+ * Tailwind orders same-property utilities by its own rules, not by class order, so DS components resolve it here.
+ */
+const GROUPS: [RegExp, string][] = [
+  [/^(hidden|block|inline|inline-block|flex|inline-flex|grid|inline-grid|contents|table-cell)$/, 'display'],
+  [/^(static|relative|absolute|fixed|sticky)$/, 'position'],
+  [/^px-/, 'px'],
+  [/^py-/, 'py'],
+  [/^p-/, 'p'],
+  [/^h-/, 'h'],
+  [/^w-/, 'w'],
+  [/^min-w-/, 'min-w'],
+  [/^rounded(-(xs|sm|md|lg|xl|frame|pill|full|none))?$/, 'rounded'],
+  [/^bg-(?!gradient|clip|cover|contain|center|no-repeat|\[(linear|radial))/, 'bg'],
+  [/^justify-(start|end|center|between|around|evenly)$/, 'justify'],
+];
+
+/** Join class names; for the groups above the last class (per variant prefix) wins. */
+export function cn(...c: (string | false | null | undefined | 0)[]) {
+  const tokens = c.filter(Boolean).join(' ').split(/\s+/).filter(Boolean);
+  const seen = new Map<string, number>();
+  const out: (string | null)[] = [];
+  for (const tok of tokens) {
+    const i = tok.lastIndexOf(':');
+    const variant = i >= 0 && !tok.slice(0, i).includes('[') ? tok.slice(0, i + 1) : '';
+    const base = tok.slice(variant.length).replace(/^!/, '');
+    const group = GROUPS.find(([re]) => re.test(base))?.[1];
+    if (group) {
+      const key = variant + group;
+      const prev = seen.get(key);
+      if (prev !== undefined) out[prev] = null;
+      seen.set(key, out.length);
+    }
+    out.push(tok);
+  }
+  return out.filter(Boolean).join(' ');
+}
 
 /** "Bakı, Nəsimi r., m. 28 May" */
 export function locationLabel(l: Pick<ListingCard, 'cityId' | 'districtId' | 'metroId'>, locale: Locale, opts: { metro?: boolean } = {}) {

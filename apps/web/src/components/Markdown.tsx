@@ -20,7 +20,7 @@ function inline(text: string, keyBase: string): ReactNode[] {
       const [, label, href] = /\[([^\]]+)\]\(([^)]+)\)/.exec(tok)!;
       const safe = /^(https?:|mailto:|tel:|\/)/i.test(href!) ? href : '#';
       out.push(
-        <a key={k} href={safe} className="font-medium text-brand underline-offset-2 hover:underline" rel={safe!.startsWith('http') ? 'noopener noreferrer' : undefined}>
+        <a key={k} href={safe} className="font-medium text-ink underline underline-offset-2" rel={safe!.startsWith('http') ? 'noopener noreferrer' : undefined}>
           {label}
         </a>,
       );
@@ -34,14 +34,14 @@ function inline(text: string, keyBase: string): ReactNode[] {
 export function Markdown({ source }: { source: string }) {
   const blocks = source.replace(/\r\n/g, '\n').split(/\n{2,}/);
   return (
-    <div className="space-y-4 leading-relaxed text-ink/90">
+    <div className="space-y-4 leading-relaxed text-ink-secondary">
       {blocks.map((b, bi) => {
         const lines = b.split('\n').filter((l) => l.trim() !== '');
         if (!lines.length) return null;
         const h = /^(#{1,4})\s+(.*)$/.exec(lines[0]!);
         if (h && lines.length === 1) {
           const lvl = h[1]!.length;
-          const cls = lvl === 1 ? 'text-2xl font-bold text-ink' : lvl === 2 ? 'mt-6 text-xl font-bold text-ink' : 'mt-4 text-lg font-semibold text-ink';
+          const cls = lvl === 1 ? 'text-h2 text-ink' : lvl === 2 ? 'mt-8 text-h2 text-ink' : 'mt-6 text-h3 text-ink';
           return lvl <= 2 ? <h2 key={bi} className={cls}>{inline(h[2]!, `h${bi}`)}</h2> : <h3 key={bi} className={cls}>{inline(h[2]!, `h${bi}`)}</h3>;
         }
         if (lines.every((l) => /^\s*([-*]|\d+\.)\s+/.test(l))) {

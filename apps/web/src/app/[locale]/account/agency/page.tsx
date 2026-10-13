@@ -7,14 +7,11 @@ import { api, isApiError } from '@/lib/api';
 import { assetUrl } from '@/lib/config';
 import { errorMessage, zodFieldErrors } from '@/lib/errors';
 import { qk } from '@/lib/query-keys';
-import { PageHeader } from '@/components/account/PageHeader';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
 import { useToast } from '@/components/providers/ToastProvider';
-import { Button, LinkButton } from '@/components/ui/Button';
-import { Alert, Badge, ErrorState, PageSpinner } from '@/components/ui/feedback';
-import { Input, Segmented, Select, Textarea } from '@/components/ui/form';
-import { BuildingIcon, ShieldCheckIcon, UploadIcon } from '@/components/ui/icons';
+import { Badge, Button, Card, ErrorState, Input, LinkButton, Notice, PageHeader, PageSpinner, Segmented, Select, Textarea } from '@/components/ds';
+import { ArrowUpRightIcon, BuildingIcon, UploadIcon } from '@/components/ds/icons';
 
 type FormState = { name: string; type: 'AGENCY' | 'DEVELOPER'; description: string; phone: string; email: string; website: string; address: string; cityId: string; logoUrl: string };
 
@@ -64,24 +61,24 @@ function AgencyForm({ agency }: { agency: Agency | null }) {
   };
   const logo = assetUrl(f.logoUrl);
   return (
-    <form onSubmit={submit} className="card flex flex-col gap-4 p-5" noValidate>
+    <Card as="form" onSubmit={submit} className="flex flex-col gap-5" noValidate>
       {agency && (
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          {agency.verified ? <Badge tone="brand" icon={<ShieldCheckIcon size={12} />}>{t('agency.verified')}</Badge> : <Badge tone="gray">{t('agency.notVerified')}</Badge>}
-          <LinkButton size="sm" variant="ghost" href={href(`/agencies/${agency.slug}`)}>{t('agency.viewPublic')}</LinkButton>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {agency.verified ? <Badge tone="verified" size="md">{t('agency.verified')}</Badge> : <Badge tone="neutral" size="md">{t('agency.notVerified')}</Badge>}
+          <LinkButton size="sm" variant="secondary" href={href(`/agencies/${agency.slug}`)} trailing={<ArrowUpRightIcon size={15} />}>{t('agency.viewPublic')}</LinkButton>
         </div>
       )}
       <div className="flex items-center gap-4">
-        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border border-line bg-surface text-muted">
+        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-lg bg-surface-raised text-muted shadow-pill">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {logo ? <img src={logo} alt="" className="h-full w-full object-cover" /> : <BuildingIcon size={32} />}
         </div>
-        <Button variant="outline" size="sm" loading={uploading} icon={<UploadIcon size={16} />} onClick={() => file.current?.click()}>
+        <Button variant="secondary" size="sm" loading={uploading} icon={<UploadIcon size={16} />} onClick={() => file.current?.click()}>
           {t('agency.uploadLogo')}
         </Button>
         <input ref={file} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" aria-label={t('agency.uploadLogo')} onChange={(e) => e.target.files?.[0] && void upload(e.target.files[0])} />
       </div>
-      <Segmented value={f.type} onChange={(v) => setF((o) => ({ ...o, type: v }))} options={[{ value: 'AGENCY', label: t('enums.agencyType.AGENCY') }, { value: 'DEVELOPER', label: t('enums.agencyType.DEVELOPER') }]} />
+      <Segmented ariaLabel={t('agency.type')} value={f.type} onChange={(v) => setF((o) => ({ ...o, type: v }))} options={[{ value: 'AGENCY', label: t('enums.agencyType.AGENCY') }, { value: 'DEVELOPER', label: t('enums.agencyType.DEVELOPER') }]} />
       <div className="grid gap-4 sm:grid-cols-2">
         <Input label={t('agency.name')} required value={f.name} onChange={set('name')} error={errors.name} />
         <Select label={t('search.city')} value={f.cityId} onChange={set('cityId')}>
@@ -96,23 +93,26 @@ function AgencyForm({ agency }: { agency: Agency | null }) {
       <div>
         <Button type="submit" size="lg" loading={save.isPending}>{agency ? t('common.save') : t('agency.create')}</Button>
       </div>
-    </form>
+    </Card>
   );
 }
 
 export default function AgencyPage() {
   const { t } = useI18n();
-  const q = useQuery({ queryKey: qk.agencyMe, queryFn: () => api.agencies.me().catch((e) => (isApiError(e) && e.status === 404 ? null : Promise.reject(e))), retry: false });
+  const { user } = useAuth();
+  const hasAgency = !!user?.agencyId;
+  // no agency yet → no request (avoids a 404); the form creates one
+  const q = useQuery({ queryKey: qk.agencyMe, queryFn: () => api.agencies.me().catch((e) => (isApiError(e) && e.status === 404 ? null : Promise.reject(e))), retry: false, enabled: hasAgency });
   return (
     <div>
       <PageHeader title={t('account.nav.agency')} sub={t('agency.sub')} />
-      {q.isLoading ? (
+      {hasAgency && q.isLoading ? (
         <PageSpinner />
       ) : q.isError ? (
         <ErrorState title={t('agency.loadError')} text={errorMessage(q.error, t)} onRetry={() => void q.refetch()} retryLabel={t('common.retry')} />
       ) : (
         <>
-          {!q.data && <Alert tone="info" className="mb-4">{t('agency.createIntro')}</Alert>}
+          {!q.data && <Notice tone="info" className="mb-4">{t('agency.createIntro')}</Notice>}
           <AgencyForm agency={q.data ?? null} />
         </>
       )}

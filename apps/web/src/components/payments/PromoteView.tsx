@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { BUNDLES, SERVICE_CATALOG, formatMoney, type BundleDef, type PaymentMethod, type ServiceDef } from '@evtap/shared';
@@ -8,24 +9,22 @@ import { api, type CreditKind } from '@/lib/api';
 import { errorMessage } from '@/lib/errors';
 import { followCheckout, paymentReturnUrl } from '@/lib/payments';
 import { qk } from '@/lib/query-keys';
+import { listingStatusTone } from '@/lib/status';
 import { cn } from '@/lib/utils';
-import { usePriceLabel } from '@/components/listings/ListingCard';
+import { Badge, Button, Card, CardHeader, ErrorState, Img, Money, Notice, PageHeader, PageSpinner, Price, StatusPill } from '@/components/ds';
+import { ArrowLeftIcon, ArrowUpIcon, BoltIcon, CheckIcon, CrownIcon, ShieldCheckIcon, SparklesIcon, StarIcon } from '@/components/ds/icons';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
 import { useToast } from '@/components/providers/ToastProvider';
-import { Button } from '@/components/ui/Button';
-import { Alert, Badge, ErrorState, PageSpinner } from '@/components/ui/feedback';
-import { ArrowUpIcon, BoltIcon, CheckIcon, CrownIcon, ShieldCheckIcon, StarIcon } from '@/components/ui/icons';
-import { Img } from '@/components/ui/Img';
 import { PayMethodPicker } from './PayMethod';
 
 const ICON: Record<string, React.ReactNode> = {
-  BUMP: <ArrowUpIcon />,
-  AUTO_BUMP: <ArrowUpIcon />,
-  VIP: <CrownIcon className="text-vip" />,
-  PREMIUM: <CrownIcon className="text-premium" />,
-  HIGHLIGHT: <StarIcon className="text-vip" />,
-  URGENT: <BoltIcon className="text-urgent" />,
+  BUMP: <ArrowUpIcon size={20} />,
+  AUTO_BUMP: <ArrowUpIcon size={20} />,
+  VIP: <StarIcon size={20} />,
+  PREMIUM: <CrownIcon size={20} />,
+  HIGHLIGHT: <SparklesIcon size={20} />,
+  URGENT: <BoltIcon size={20} />,
 };
 
 export function PromoteView({ id }: { id: string }) {
@@ -34,7 +33,6 @@ export function PromoteView({ id }: { id: string }) {
   const router = useRouter();
   const toast = useToast();
   const qc = useQueryClient();
-  const price = usePriceLabel();
   const listing = useQuery({ queryKey: qk.listing(id), queryFn: () => api.listings.get(id), retry: false });
   const catalog = useQuery({ queryKey: qk.catalog, queryFn: api.ref.catalog, staleTime: 5 * 60_000, retry: false });
   const services: ServiceDef[] = (catalog.data?.services ?? SERVICE_CATALOG).filter((s) => s.active).sort((a, b) => a.sortOrder - b.sortOrder);
@@ -57,14 +55,7 @@ export function PromoteView({ id }: { id: string }) {
   };
 
   const pay = useMutation({
-    mutationFn: () =>
-      api.payments.checkout({
-        purpose: 'PROMOTION',
-        listingId: id,
-        ...(bundle ? { bundleCode: bundle } : { serviceCodes: selected }),
-        method,
-        returnUrl: paymentReturnUrl(locale),
-      }),
+    mutationFn: () => api.payments.checkout({ purpose: 'PROMOTION', listingId: id, ...(bundle ? { bundleCode: bundle } : { serviceCodes: selected }), method, returnUrl: paymentReturnUrl(locale) }),
     onSuccess: (c) => followCheckout(c, locale, router.push),
   });
   const verify = useMutation({
@@ -88,27 +79,26 @@ export function PromoteView({ id }: { id: string }) {
   const name = (s: { name: Record<string, string> }) => s.name[locale] ?? s.name.az;
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <h1 className="text-2xl font-bold sm:text-3xl">{t('promote.title')}</h1>
-      <p className="mt-1 text-muted">{t('promote.subtitle')}</p>
+    <div className="mx-auto max-w-6xl">
+      <PageHeader title={t('promote.title')} sub={t('promote.subtitle')} />
 
-      <div className="mt-5 flex items-center gap-4 rounded-card border border-line bg-white p-3">
-        <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-lg">
-          <Img src={l.coverUrl} alt={l.title} fill sizes="96px" className="object-cover" />
-        </div>
-        <div className="min-w-0">
-          <div className="font-bold">{price(l)}</div>
-          <div className="truncate text-sm text-muted">{l.title}</div>
-        </div>
-        {l.status !== 'ACTIVE' && <Badge tone="gray" className="ml-auto">{t(`enums.listingStatus.${l.status}`)}</Badge>}
-      </div>
-      {l.status !== 'ACTIVE' && <Alert tone="warning" className="mt-3">{t('promote.notActive')}</Alert>}
-      {catalog.isError && <Alert tone="warning" className="mt-3">{t('promote.catalogFallback')}</Alert>}
+      <Card pad="sm" className="mb-5 flex items-center gap-4">
+        <span className="relative h-16 w-24 shrink-0 overflow-hidden rounded-md">
+          <Img src={l.coverUrl} alt="" fill sizes="96px" className="object-cover" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <Price l={l} className="block font-display text-[22px] leading-tight" />
+          <span className="block truncate text-label text-ink-secondary">{l.title}</span>
+        </span>
+        <StatusPill tone={listingStatusTone(l.status)} className="hidden sm:inline-flex">{t(`enums.listingStatus.${l.status}`)}</StatusPill>
+      </Card>
+      {l.status !== 'ACTIVE' && <Notice tone="warning" className="mb-4">{t('promote.notActive')}</Notice>}
+      {catalog.isError && <Notice tone="warning" className="mb-4">{t('promote.catalogFallback')}</Notice>}
 
       {usage && (usage.bumpsLeft > 0 || usage.vipCreditsLeft > 0 || usage.premiumCreditsLeft > 0) && (
-        <section className="mt-6 rounded-card border border-brand/30 bg-brand-50 p-4">
-          <h2 className="font-semibold text-brand-dark">{t('promote.credits')}</h2>
-          <div className="mt-3 flex flex-wrap gap-2">
+        <Card tone="ink" className="mb-5">
+          <h2 className="text-h3">{t('promote.credits')}</h2>
+          <div className="mt-4 flex flex-wrap gap-2">
             {(
               [
                 ['BUMP', usage.bumpsLeft, t('promote.creditBump')],
@@ -118,23 +108,26 @@ export function PromoteView({ id }: { id: string }) {
             )
               .filter(([, n]) => n > 0)
               .map(([k, n, label]) => (
-                <Button key={k} variant="white" loading={credit.isPending && credit.variables === k} onClick={() => credit.mutate(k)}>
-                  {label} <span className="rounded-full bg-brand-50 px-1.5 text-xs text-brand">{n}</span>
+                <Button key={k} variant="glass" loading={credit.isPending && credit.variables === k} onClick={() => credit.mutate(k)} trailing={<span className="tabular rounded-pill bg-ink px-2 text-[11px] text-on-ink">{n}</span>}>
+                  {label}
                 </Button>
               ))}
           </div>
-        </section>
+        </Card>
       )}
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
-        <div className="flex flex-col gap-6">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="flex flex-col gap-5">
           {bundles.length > 0 && (
-            <section>
-              <h2 className="mb-3 text-lg font-semibold">{t('promote.bundles')}</h2>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {bundles.map((b) => {
+            <section aria-labelledby="bundles-h">
+              <h2 id="bundles-h" className="mb-3 text-h2">
+                {t('promote.bundles')}
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {bundles.map((b, bi) => {
                   const regular = b.serviceCodes.reduce((s, c) => s + (services.find((x) => x.code === c)?.price ?? 0), 0);
                   const on = bundle === b.code;
+                  const featured = bi === bundles.length - 1;
                   return (
                     <button
                       key={b.code}
@@ -144,72 +137,80 @@ export function PromoteView({ id }: { id: string }) {
                         setSelected([]);
                         setBundle(on ? null : b.code);
                       }}
-                      className={cn('relative rounded-card border p-4 text-left transition', on ? 'border-premium bg-premium-50 ring-1 ring-premium' : 'border-line bg-white hover:border-ink/30')}
+                      className={cn('press relative flex flex-col rounded-xl p-6 text-left', featured ? 'bg-ink text-on-ink' : 'bg-surface shadow-card', on && 'ring-[3px] ring-accent-strong ring-offset-2 ring-offset-frame')}
                     >
-                      {regular > b.price && <span className="absolute right-3 top-3 rounded-full bg-urgent px-2 py-0.5 text-xs font-bold text-white">−{Math.round((1 - b.price / regular) * 100)}%</span>}
-                      <div className="font-semibold">{name(b)}</div>
-                      <ul className="mt-2 space-y-1 text-sm text-muted">
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="text-h3">{name(b)}</span>
+                        {regular > b.price && <Badge tone="accent">−{Math.round((1 - b.price / regular) * 100)}%</Badge>}
+                      </span>
+                      <span className="mt-5 flex items-baseline gap-2">
+                        <Money value={b.price} minor className="font-display text-[40px] font-light leading-none tracking-[-1.2px]" symbolClassName={featured ? 'text-subtle' : undefined} />
+                        {regular > b.price && <span className={cn('text-label line-through', featured ? 'opacity-60' : 'text-muted')}>{formatMoney(regular)}</span>}
+                      </span>
+                      <ul className="mt-5 space-y-2.5 text-[14px]">
                         {b.serviceCodes.map((c) => {
                           const s = services.find((x) => x.code === c);
                           return (
-                            <li key={c} className="flex items-center gap-1.5">
-                              <CheckIcon size={14} className="text-brand" /> {s ? name(s) : c}
+                            <li key={c} className="flex items-center gap-2.5">
+                              <span className={cn('flex h-6 w-6 items-center justify-center rounded-full', featured ? 'bg-on-ink text-ink' : 'bg-ink text-on-ink')}>
+                                <CheckIcon size={13} strokeWidth={2.4} />
+                              </span>
+                              {s ? name(s) : c}
                             </li>
                           );
                         })}
                       </ul>
-                      <div className="mt-3 flex items-baseline gap-2">
-                        <span className="text-xl font-bold">{formatMoney(b.price)}</span>
-                        {regular > b.price && <span className="text-sm text-muted line-through">{formatMoney(regular)}</span>}
-                      </div>
+                      <span className={cn('mt-6 flex h-11 items-center justify-center rounded-pill text-[14px] font-medium', featured ? 'bg-accent text-on-accent' : 'bg-ink text-on-ink')}>{on ? t('promote.selected') : t('promote.choose')}</span>
                     </button>
                   );
                 })}
               </div>
             </section>
           )}
-          <section>
-            <h2 className="mb-3 text-lg font-semibold">{t('promote.services')}</h2>
+          <section aria-labelledby="services-h">
+            <h2 id="services-h" className="mb-3 text-h2">
+              {t('promote.services')}
+            </h2>
             <div className="grid gap-3 sm:grid-cols-2">
               {promoServices.map((s) => {
                 const on = selected.includes(s.code);
                 return (
-                  <button key={s.code} type="button" aria-pressed={on} onClick={() => toggle(s.code)} className={cn('flex items-start gap-3 rounded-card border p-4 text-left transition', on ? 'border-brand bg-brand-50 ring-1 ring-brand' : 'border-line bg-white hover:border-ink/30')}>
-                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface">{ICON[s.promotionType ?? ''] ?? <ArrowUpIcon />}</span>
+                  <button key={s.code} type="button" aria-pressed={on} onClick={() => toggle(s.code)} className={cn('press flex items-start gap-3 rounded-lg bg-surface-raised p-4 text-left shadow-pill', on ? 'ring-[1.5px] ring-inset ring-ink' : 'hover:bg-surface-sunken')}>
+                    <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-full', on ? 'bg-ink text-on-ink' : 'bg-surface-sunken')}>{ICON[s.promotionType ?? ''] ?? <ArrowUpIcon size={20} />}</span>
                     <span className="min-w-0 flex-1">
-                      <span className="block font-semibold">{name(s)}</span>
-                      <span className="block text-xs text-muted">{s.description[locale] ?? s.description.az}</span>
+                      <span className="block font-medium">{name(s)}</span>
+                      <span className="block text-caption text-muted">{s.description[locale] ?? s.description.az}</span>
                     </span>
-                    <span className="shrink-0 font-bold">{formatMoney(s.price)}</span>
+                    <Money value={s.price} minor className="shrink-0 font-medium" />
                   </button>
                 );
               })}
             </div>
           </section>
           {verification && !l.isVerified && (
-            <section className="rounded-card border border-line bg-white p-4">
-              <div className="flex items-start gap-3">
-                <ShieldCheckIcon className="mt-0.5 shrink-0 text-brand" />
-                <div className="flex-1">
-                  <div className="font-semibold">{name(verification)}</div>
-                  <p className="text-sm text-muted">{verification.description[locale] ?? verification.description.az}</p>
-                </div>
-                <Button variant="secondary" loading={verify.isPending} onClick={() => verify.mutate()}>
-                  {formatMoney(verification.price)}
-                </Button>
+            <Card className="flex flex-wrap items-center gap-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-success-bg text-success">
+                <ShieldCheckIcon size={22} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium">{name(verification)}</div>
+                <p className="text-label font-normal text-ink-secondary">{verification.description[locale] ?? verification.description.az}</p>
               </div>
-            </section>
+              <Button variant="secondary" loading={verify.isPending} onClick={() => verify.mutate()}>
+                <Money value={verification.price} minor />
+              </Button>
+            </Card>
           )}
         </div>
 
-        <aside className="lg:sticky lg:top-20 lg:self-start">
-          <div className="card p-5">
-            <h2 className="font-semibold">{t('promote.summary')}</h2>
-            <ul className="mt-3 space-y-1.5 text-sm">
+        <aside className="lg:sticky lg:top-28 lg:self-start">
+          <section className="glass rounded-xl p-6 shadow-raised" aria-labelledby="summary-h">
+            <CardHeader id="summary-h" title={t('promote.summary')} />
+            <ul className="space-y-2 text-[14px]">
               {bundle ? (
                 <li className="flex justify-between gap-2">
                   <span>{name(bundles.find((b) => b.code === bundle)!)}</span>
-                  <span className="font-semibold">{formatMoney(total)}</span>
+                  <Money value={total} minor className="font-medium" />
                 </li>
               ) : selected.length ? (
                 selected.map((c) => {
@@ -217,7 +218,7 @@ export function PromoteView({ id }: { id: string }) {
                   return (
                     <li key={c} className="flex justify-between gap-2">
                       <span>{name(s)}</span>
-                      <span className="font-semibold">{formatMoney(s.price)}</span>
+                      <Money value={s.price} minor className="font-medium" />
                     </li>
                   );
                 })
@@ -225,20 +226,20 @@ export function PromoteView({ id }: { id: string }) {
                 <li className="text-muted">{t('promote.nothingSelected')}</li>
               )}
             </ul>
-            <div className="mt-4 flex justify-between border-t border-line pt-3 text-lg font-bold">
-              <span>{t('booking.total')}</span>
-              <span>{formatMoney(total)}</span>
+            <div className="mt-4 flex items-end justify-between border-t border-hairline pt-4">
+              <span className="font-medium">{t('booking.total')}</span>
+              <Money value={total} minor className="font-display text-[30px] leading-none tracking-[-0.8px]" />
             </div>
-            <div className="mt-4">
+            <div className="mt-5">
               <PayMethodPicker value={method} onChange={setMethod} amount={total} stacked />
             </div>
-            <Button size="lg" className="mt-4 w-full" disabled={total === 0} loading={pay.isPending} onClick={() => pay.mutate()}>
+            <Button size="lg" className="mt-5 w-full" disabled={total === 0} loading={pay.isPending} onClick={() => pay.mutate()}>
               {t('promote.pay', { amount: formatMoney(total) })}
             </Button>
-            <a href={href(`/listings/${id}`)} className="mt-3 block text-center text-sm font-semibold text-muted hover:text-ink">
-              {t('common.back')}
-            </a>
-          </div>
+            <Link href={href(`/listings/${id}`)} className="mt-3 flex h-11 items-center justify-center gap-2 rounded-pill text-[14px] font-medium text-ink-secondary hover:bg-pill">
+              <ArrowLeftIcon size={16} /> {t('common.back')}
+            </Link>
+          </section>
         </aside>
       </div>
     </div>

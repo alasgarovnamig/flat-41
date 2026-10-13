@@ -6,7 +6,7 @@ import { cn, toIso, todayIso } from '@/lib/utils';
 import { useI18n } from '@/components/providers/I18nProvider';
 import { ChevronLeft, ChevronRight } from './icons';
 
-export interface DayState { disabled?: boolean; selected?: boolean; inRange?: boolean; rangeStart?: boolean; rangeEnd?: boolean; muted?: boolean; marker?: 'blocked' | 'booked' }
+export interface DayState { disabled?: boolean; selected?: boolean; inRange?: boolean; rangeStart?: boolean; rangeEnd?: boolean; marker?: 'blocked' | 'booked' }
 
 function monthDays(year: number, month: number) {
   const first = new Date(year, month, 1);
@@ -17,9 +17,12 @@ function monthDays(year: number, month: number) {
   return cells;
 }
 
-/** Generic month grid(s) — used by the booking range picker and the host calendar. */
+/**
+ * Month grid(s): selected = black circle, range = sunken pill band, blocked = hatched, booked = peach.
+ * Used by the booking range picker and the host calendar.
+ */
 export function Calendar({ months = 1, dayState, onDayClick, initialMonth, onMonthChange }: { months?: number; dayState: (iso: string) => DayState; onDayClick: (iso: string) => void; initialMonth?: string; onMonthChange?: (firstIso: string) => void }) {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
   const init = initialMonth ? new Date(initialMonth + 'T00:00:00') : new Date();
   const [cursor, setCursor] = useState({ y: init.getFullYear(), m: init.getMonth() });
   const weekdays = WEEKDAYS[locale];
@@ -34,24 +37,36 @@ export function Calendar({ months = 1, dayState, onDayClick, initialMonth, onMon
 
   return (
     <div className="select-none">
-      <div className="mb-2 flex items-center justify-between">
-        <button type="button" onClick={() => shift(-1)} className="rounded-lg p-2 hover:bg-ink/5" aria-label="‹">
-          <ChevronLeft size={18} />
-        </button>
-        <button type="button" onClick={() => shift(1)} className="rounded-lg p-2 hover:bg-ink/5" aria-label="›">
-          <ChevronRight size={18} />
-        </button>
-      </div>
-      <div className={cn('grid gap-6', months > 1 && 'sm:grid-cols-2')}>
+      <div className={cn('grid gap-8', months > 1 && 'sm:grid-cols-2')}>
         {Array.from({ length: months }, (_, k) => {
           const d = new Date(cursor.y, cursor.m + k, 1);
           const cells = monthDays(d.getFullYear(), d.getMonth());
           return (
             <div key={k} className={cn(k > 0 && 'hidden sm:block')}>
-              <div className="mb-2 text-center text-sm font-semibold capitalize">{monthTitle(d)}</div>
-              <div className="grid grid-cols-7 text-center text-[11px] font-medium uppercase text-muted">
+              <div className="mb-3 flex h-11 items-center justify-between">
+                {k === 0 ? (
+                  <button type="button" onClick={() => shift(-1)} className="press flex h-11 w-11 items-center justify-center rounded-full bg-surface-sunken hover:bg-pill" aria-label={t('common.prev')}>
+                    <ChevronLeft size={18} />
+                  </button>
+                ) : (
+                  <span className="w-11" />
+                )}
+                <div className="font-display text-[17px] font-medium" aria-live="polite">
+                  {monthTitle(d)}
+                </div>
+                {k === months - 1 || months === 1 ? (
+                  <button type="button" onClick={() => shift(1)} className={cn('press flex h-11 w-11 items-center justify-center rounded-full bg-surface-sunken hover:bg-pill', months > 1 && k === 0 && 'sm:invisible')} aria-label={t('common.next')}>
+                    <ChevronRight size={18} />
+                  </button>
+                ) : (
+                  <button type="button" onClick={() => shift(1)} className="press flex h-11 w-11 items-center justify-center rounded-full bg-surface-sunken hover:bg-pill sm:invisible" aria-label={t('common.next')}>
+                    <ChevronRight size={18} />
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-7 text-center text-caption text-muted">
                 {weekdays.map((w) => (
-                  <div key={w} className="py-1">
+                  <div key={w} className="py-1.5">
                     {w}
                   </div>
                 ))}
@@ -69,21 +84,21 @@ export function Calendar({ months = 1, dayState, onDayClick, initialMonth, onMon
                       aria-pressed={!!s.selected}
                       aria-label={iso}
                       className={cn(
-                        'relative mx-auto flex h-9 w-full items-center justify-center text-sm transition-colors',
-                        s.inRange && 'bg-brand-50',
-                        s.rangeStart && 'rounded-l-full',
-                        s.rangeEnd && 'rounded-r-full',
-                        s.disabled && 'cursor-not-allowed text-ink/25 line-through',
-                        !s.disabled && !s.selected && 'hover:bg-ink/5 rounded-full',
-                        s.marker === 'booked' && 'bg-premium-50 text-premium no-underline',
-                        s.marker === 'blocked' && 'bg-urgent-50 text-urgent',
+                        'relative flex h-11 w-full items-center justify-center text-[14px]',
+                        s.inRange && 'bg-surface-sunken',
+                        s.rangeStart && 'rounded-l-pill',
+                        s.rangeEnd && 'rounded-r-pill',
+                        s.disabled && !s.marker && 'cursor-not-allowed text-subtle line-through',
                       )}
                     >
                       <span
                         className={cn(
-                          'flex h-9 w-9 items-center justify-center rounded-full',
-                          s.selected && 'bg-brand font-semibold text-white',
-                          iso === today && !s.selected && 'font-bold text-brand',
+                          'tabular flex h-10 w-10 items-center justify-center rounded-full transition-colors',
+                          !s.disabled && !s.selected && 'hover:bg-pill',
+                          s.selected && 'bg-ink font-medium text-on-ink',
+                          s.marker === 'booked' && 'bg-accent text-on-accent',
+                          s.marker === 'blocked' && 'hatch bg-surface-sunken text-ink-secondary ring-1 ring-inset ring-subtle',
+                          iso === today && !s.selected && 'font-semibold ring-1 ring-inset ring-ink',
                         )}
                       >
                         {Number(iso.slice(8))}

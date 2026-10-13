@@ -1,9 +1,10 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { api } from './api';
 import { qk } from './query-keys';
+import { realtime, type RealtimeStatus, type ServerEvents } from './realtime';
 import { useAuth, useAuthGate } from '@/components/providers/AuthProvider';
 
 /** Favorite ids of the current user + toggle with optimistic update. */
@@ -40,6 +41,18 @@ export function useDebounced<T>(value: T, ms = 400) {
     return () => clearTimeout(id);
   }, [value, ms]);
   return v;
+}
+
+/** WebSocket connection status — screens poll while it is not `open`. */
+export function useRealtimeStatus(): RealtimeStatus {
+  return useSyncExternalStore(realtime.subscribeStatus, () => realtime.status, () => 'idle' as RealtimeStatus);
+}
+
+/** Subscribe to one realtime server event for the component's lifetime. */
+export function useRealtimeEvent<E extends keyof ServerEvents>(event: E, handler: (data: ServerEvents[E]) => void) {
+  const ref = useRef(handler);
+  ref.current = handler;
+  useEffect(() => realtime.on(event, (d) => ref.current(d)), [event]);
 }
 
 /** media query hook (client only, false during SSR) */

@@ -3,15 +3,14 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { formatMoney, type Payment } from '@evtap/shared';
+import type { Payment } from '@evtap/shared';
 import { api } from '@/lib/api';
 import { errorMessage } from '@/lib/errors';
 import { qk } from '@/lib/query-keys';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { LinkButton } from '@/components/ui/Button';
-import { Alert, Spinner } from '@/components/ui/feedback';
-import { CheckIcon, CloseIcon } from '@/components/ui/icons';
+import { Card, LinkButton, Money, Notice, Spinner } from '@/components/ds';
+import { ArrowUpRightIcon, CheckIcon, CloseIcon } from '@/components/ds/icons';
 
 const FINAL = ['SUCCEEDED', 'FAILED', 'CANCELLED', 'REFUNDED', 'PARTIALLY_REFUNDED'];
 const POLL_MS = 2000;
@@ -81,80 +80,80 @@ export function PaymentResult() {
 
   if (!paymentId)
     return (
-      <Card tone="error" title={t('result.missing')}>
-        <LinkButton href={href('/account/payments')}>{t('result.toPayments')}</LinkButton>
-      </Card>
+      <ResultCard tone="error" title={t('result.missing')}>
+        <LinkButton href={href('/account/payments')} className="mt-6">{t('result.toPayments')}</LinkButton>
+      </ResultCard>
     );
 
   if (authStatus === 'anonymous')
     return (
-      <Card tone="pending" title={t('result.loginToSee')}>
-        <LinkButton href={`${href('/login')}?next=${encodeURIComponent(`${href('/payment/result')}?${sp.toString()}`)}`}>{t('nav.login')}</LinkButton>
-      </Card>
+      <ResultCard tone="pending" title={t('result.loginToSee')}>
+        <LinkButton className="mt-6" href={`${href('/login')}?next=${encodeURIComponent(`${href('/payment/result')}?${sp.toString()}`)}`}>{t('nav.login')}</LinkButton>
+      </ResultCard>
     );
 
   if (q.isError && !p)
     return (
-      <Card tone="error" title={t('result.loadError')}>
-        <p className="mb-4 text-sm text-muted">{errorMessage(q.error, t)}</p>
+      <ResultCard tone="error" title={t('result.loadError')}>
+        <p className="mb-6 text-label font-normal text-ink-secondary">{errorMessage(q.error, t)}</p>
         <LinkButton href={href('/account/payments')}>{t('result.toPayments')}</LinkButton>
-      </Card>
+      </ResultCard>
     );
 
   if (!final) {
     return (
-      <Card tone="pending" title={timedOut ? t('result.stillPending') : t('result.processing')}>
-        <p className="text-sm text-muted">{timedOut ? t('result.stillPendingText') : hinted === 'SUCCEEDED' ? t('result.confirming') : t('result.processingText')}</p>
+      <ResultCard tone="pending" title={timedOut ? t('result.stillPending') : t('result.processing')}>
+        <p className="text-label font-normal text-ink-secondary">{timedOut ? t('result.stillPendingText') : hinted === 'SUCCEEDED' ? t('result.confirming') : t('result.processingText')}</p>
         {timedOut && (
           <LinkButton href={href('/account/payments')} className="mt-5">
             {t('result.toPayments')}
           </LinkButton>
         )}
-      </Card>
+      </ResultCard>
     );
   }
 
   const actions = nextActions(p, ok, href, t);
   return (
-    <Card tone={ok ? 'success' : 'error'} title={ok ? t('result.success') : p.status === 'CANCELLED' ? t('result.cancelled') : t('result.failed')}>
-      <dl className="mx-auto mt-2 w-full max-w-sm space-y-2 rounded-xl bg-surface p-4 text-left text-sm">
+    <ResultCard tone={ok ? 'success' : 'error'} title={ok ? t('result.success') : p.status === 'CANCELLED' ? t('result.cancelled') : t('result.failed')}>
+      <Money value={p.amount} currency={p.currency} minor className="mt-1 block font-display text-[44px] font-light leading-none tracking-[-1.4px]" />
+      <dl className="mx-auto mt-6 w-full max-w-sm space-y-2.5 rounded-lg bg-surface-raised p-5 text-left text-[14px] shadow-pill">
         <Row k={t('result.purpose')} v={t(`enums.paymentPurpose.${p.purpose}`)} />
         <Row k={t('result.description')} v={p.description} />
-        <Row k={t('common.amount')} v={formatMoney(p.amount, p.currency)} />
         <Row k={t('payment.method')} v={p.method === 'WALLET' ? t('payment.wallet') : `${t('payment.card')}${p.cardMask ? ` · ${p.cardMask}` : ''}`} />
         <Row k={t('common.date')} v={dateTime(p.paidAt ?? p.createdAt)} />
       </dl>
-      {!ok && p.failureReason && <Alert tone="error" className="mx-auto mt-4 max-w-sm text-left">{p.failureReason}</Alert>}
-      <div className="mt-6 flex flex-wrap justify-center gap-2">
+      {!ok && p.failureReason && <Notice tone="error" className="mx-auto mt-4 max-w-sm text-left">{p.failureReason}</Notice>}
+      <div className="mt-7 flex flex-wrap justify-center gap-2">
         {actions.map((a) => (
-          <LinkButton key={a.href + a.label} href={a.href} variant={a.primary ? 'primary' : 'outline'}>
+          <LinkButton key={a.href + a.label} href={a.href} variant={a.primary ? 'primary' : 'secondary'} trailing={a.primary ? <ArrowUpRightIcon size={16} /> : undefined}>
             {a.label}
           </LinkButton>
         ))}
       </div>
-    </Card>
+    </ResultCard>
   );
 }
 
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex justify-between gap-4">
-      <dt className="text-muted">{k}</dt>
+      <dt className="text-ink-secondary">{k}</dt>
       <dd className="text-right font-medium">{v}</dd>
     </div>
   );
 }
 
-function Card({ tone, title, children }: { tone: 'success' | 'error' | 'pending'; title: string; children?: React.ReactNode }) {
+function ResultCard({ tone, title, children }: { tone: 'success' | 'error' | 'pending'; title: string; children?: React.ReactNode }) {
   return (
-    <div className="mx-auto max-w-lg rounded-2xl border border-line bg-white p-8 text-center shadow-card">
-      <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${tone === 'success' ? 'bg-brand-50 text-brand' : tone === 'error' ? 'bg-urgent-50 text-urgent' : 'bg-vip-50 text-amber-600'}`}>
-        {tone === 'success' ? <CheckIcon size={32} strokeWidth={2.5} /> : tone === 'error' ? <CloseIcon size={30} strokeWidth={2.5} /> : <Spinner size={30} />}
+    <Card pad="lg" className="mx-auto max-w-lg text-center">
+      <div className={`mx-auto flex h-18 w-18 items-center justify-center rounded-full ${tone === 'success' ? 'bg-ink text-on-ink' : tone === 'error' ? 'bg-danger-bg text-danger' : 'bg-surface-sunken text-ink'}`}>
+        {tone === 'success' ? <CheckIcon size={32} strokeWidth={2} /> : tone === 'error' ? <CloseIcon size={30} strokeWidth={2} /> : <Spinner size={30} />}
       </div>
-      <h1 className="mt-4 text-2xl font-bold" role="status">
+      <h1 className="mt-5 text-h1" role="status">
         {title}
       </h1>
       <div className="mt-2">{children}</div>
-    </div>
+    </Card>
   );
 }

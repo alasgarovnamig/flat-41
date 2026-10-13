@@ -5,13 +5,14 @@ import { cache } from 'react';
 import type { CmsPage } from '@evtap/shared';
 import { Markdown } from '@/components/Markdown';
 import { RetryError } from '@/components/RetryError';
+import { Card } from '@/components/ds';
 import { api, isApiError } from '@/lib/api';
+import { STATIC_PAGE_SLUGS, fetchPageLinks, staticPageKey } from '@/lib/cms';
 import { formatDate, toLocale, type Locale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n.server';
+import { cn } from '@/lib/utils';
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
-
-const STATIC_PAGES = ['about', 'terms', 'privacy', 'help', 'pricing-info'] as const;
 
 const load = cache(async (slug: string): Promise<CmsPage | 'not_found' | 'error'> => {
   if (!/^[a-z0-9-]+$/.test(slug)) return 'not_found';
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale: raw, slug } = await params;
   const locale = toLocale(raw);
   const p = await load(slug);
-  if (typeof p === 'string') return { title: getT(locale)(`footer.${slug === 'pricing-info' ? 'pricingInfo' : slug}`) };
+  if (typeof p === 'string') return { title: getT(locale)(staticPageKey(slug)) };
   return {
     title: pick(p.title, locale),
     description: pick(p.body, locale).replace(/[#*_[\]()]/g, '').slice(0, 160),
@@ -40,27 +41,33 @@ export default async function CmsPageView({ params }: Props) {
   const { locale: raw, slug } = await params;
   const locale = toLocale(raw);
   const t = getT(locale);
-  const p = await load(slug);
+  const [p, index] = await Promise.all([load(slug), fetchPageLinks(locale)]);
   if (p === 'not_found') notFound();
   if (p === 'error') return <RetryError />;
+  // page navigation: the CMS index (GET /pages) when available, else the static slugs
+  const links = index?.length ? index : STATIC_PAGE_SLUGS.map((s) => ({ slug: s, title: t(staticPageKey(s)) }));
   return (
-    <div className="container-page grid gap-8 py-10 lg:grid-cols-[220px_1fr]">
-      <nav aria-label={t('footer.company')} className="hidden lg:block">
-        <ul className="sticky top-20 space-y-1 text-sm">
-          {STATIC_PAGES.map((s) => (
-            <li key={s}>
-              <Link href={`/${locale}/pages/${s}`} aria-current={s === slug ? 'page' : undefined} className={`block rounded-lg px-3 py-2 ${s === slug ? 'bg-brand-50 font-semibold text-brand-dark' : 'text-ink/80 hover:bg-white'}`}>
-                {t(`footer.${s === 'pricing-info' ? 'pricingInfo' : s}`)}
+    <div className="container-page grid gap-6 py-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:py-10">
+      <nav aria-label={t('footer.company')}>
+        <ul className="scrollbar-none -mx-1 flex gap-2 overflow-x-auto px-1 lg:sticky lg:top-28 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:rounded-xl lg:bg-surface lg:p-3 lg:shadow-card">
+          {links.map((l) => (
+            <li key={l.slug} className="shrink-0">
+              <Link
+                href={`/${locale}/pages/${l.slug}`}
+                aria-current={l.slug === slug ? 'page' : undefined}
+                className={cn('press flex h-11 items-center rounded-pill px-4 text-[14px] font-medium', l.slug === slug ? 'bg-ink text-on-ink' : 'bg-pill text-ink hover:bg-pill-hover lg:bg-transparent lg:hover:bg-surface-sunken')}
+              >
+                {l.title}
               </Link>
             </li>
           ))}
         </ul>
       </nav>
-      <article className="card max-w-3xl p-6 sm:p-10">
-        <h1 className="mb-2 text-3xl font-bold tracking-tight">{pick(p.title, locale)}</h1>
-        <p className="mb-6 text-xs text-muted">{t('pages.updated', { date: formatDate(p.updatedAt, locale) })}</p>
+      <Card as="article" pad="lg" className="max-w-3xl">
+        <h1 className="text-[36px] font-normal leading-tight tracking-[-1px]">{pick(p.title, locale)}</h1>
+        <p className="mb-8 mt-3 inline-flex h-8 items-center rounded-pill bg-surface-sunken px-3 text-caption text-ink-secondary">{t('pages.updated', { date: formatDate(p.updatedAt, locale) })}</p>
         <Markdown source={pick(p.body, locale)} />
-      </article>
+      </Card>
     </div>
   );
 }

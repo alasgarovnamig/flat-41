@@ -3,20 +3,17 @@
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { DEFAULT_SETTINGS, calcBooking, formatMoney, formatPrice, nightsBetween, type ListingDetail, type PaymentMethod } from '@evtap/shared';
+import { DEFAULT_SETTINGS, calcBooking, nightsBetween, type ListingDetail, type PaymentMethod } from '@evtap/shared';
 import { api } from '@/lib/api';
 import { errorMessage } from '@/lib/errors';
 import { followCheckout, paymentReturnUrl } from '@/lib/payments';
 import { qk } from '@/lib/query-keys';
 import { addDays, cn, todayIso } from '@/lib/utils';
+import { Button, DateRangePicker, Modal, Money, Notice, Rating, Spinner } from '@/components/ds';
+import { CalendarIcon, MinusIcon, PlusIcon, ShieldCheckIcon } from '@/components/ds/icons';
+import { PayMethodPicker } from '@/components/payments/PayMethod';
 import { useAuthGate } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { PayMethodPicker } from '@/components/payments/PayMethod';
-import { Button } from '@/components/ui/Button';
-import { DateRangePicker } from '@/components/ui/Calendar';
-import { Alert, Spinner } from '@/components/ui/feedback';
-import { ShieldCheckIcon, StarIcon } from '@/components/ui/icons';
-import { Modal } from '@/components/ui/Modal';
 
 export function useBlockedDates(listingId: string) {
   const from = todayIso();
@@ -32,6 +29,7 @@ export function useBlockedDates(listingId: string) {
   return { blocked, query: q };
 }
 
+/** Booking widget — glass card: price/night, date pills, guests stepper, quote, pay method, black reserve pill. */
 export function BookingWidget({ l }: { l: ListingDetail }) {
   const { t, locale, date } = useI18n();
   const router = useRouter();
@@ -70,43 +68,44 @@ export function BookingWidget({ l }: { l: ListingDetail }) {
   const fmt = (d: string | null) => (d ? date(d, { day: 'numeric', month: 'short' }) : t('booking.addDate'));
 
   return (
-    <div className="card p-5" id="booking">
-      <div className="flex items-baseline justify-between">
-        <div>
-          <span className="text-2xl font-bold">{formatPrice(l.price, l.currency)}</span>
-          <span className="text-muted"> / {t('common.perNight')}</span>
-        </div>
-        {l.rating != null && (
-          <span className="flex items-center gap-1 text-sm font-semibold">
-            <StarIcon size={14} className="text-vip" /> {l.rating.toFixed(1)} <span className="font-normal text-muted">({l.reviewsCount})</span>
-          </span>
-        )}
+    <section className="glass rounded-xl p-5 shadow-raised sm:p-6" id="booking" aria-labelledby="booking-h">
+      <h2 id="booking-h" className="sr-only">
+        {t('booking.reserve')}
+      </h2>
+      <div className="flex items-end justify-between gap-3">
+        <Money value={l.price} currency={l.currency} suffix={`/ ${t('common.perNight')}`} className="font-display text-[34px] font-normal leading-none tracking-[-0.8px]" />
+        {l.rating != null && <Rating value={l.rating} count={l.reviewsCount} className="text-label" />}
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-xl border border-line">
-        <button type="button" onClick={() => setPicker(true)} className="grid w-full grid-cols-2 text-left hover:bg-surface">
-          <span className="border-r border-line p-3">
-            <span className="block text-[11px] font-bold uppercase tracking-wide text-muted">{t('booking.checkIn')}</span>
-            <span className={cn('text-sm', !checkIn && 'text-muted')}>{fmt(checkIn)}</span>
+      <button type="button" onClick={() => setPicker(true)} className="press mt-5 grid w-full grid-cols-2 gap-2 text-left" aria-label={t('booking.selectDates')}>
+        {[
+          [t('booking.checkIn'), checkIn],
+          [t('booking.checkOut'), checkOut],
+        ].map(([label, v]) => (
+          <span key={label} className="rounded-lg bg-surface-raised px-4 py-3 shadow-pill hover:bg-surface-sunken">
+            <span className="flex items-center gap-1.5 text-caption text-muted">
+              <CalendarIcon size={13} /> {label}
+            </span>
+            <span className={cn('mt-0.5 block text-[15px] font-medium', !v && 'text-muted')}>{fmt(v)}</span>
           </span>
-          <span className="p-3">
-            <span className="block text-[11px] font-bold uppercase tracking-wide text-muted">{t('booking.checkOut')}</span>
-            <span className={cn('text-sm', !checkOut && 'text-muted')}>{fmt(checkOut)}</span>
-          </span>
-        </button>
-        <label className="flex items-center justify-between border-t border-line p-3">
-          <span className="text-[11px] font-bold uppercase tracking-wide text-muted">{t('booking.guests')}</span>
-          <select value={guests} onChange={(e) => setGuests(Number(e.target.value))} className="bg-transparent text-sm font-medium outline-none" aria-label={t('booking.guests')}>
-            {Array.from({ length: maxGuests }, (_, i) => i + 1).map((n) => (
-              <option key={n} value={n}>
-                {t('booking.guestsN', { n })}
-              </option>
-            ))}
-          </select>
-        </label>
+        ))}
+      </button>
+      <div className="mt-2 flex items-center justify-between rounded-lg bg-surface-raised px-4 py-2 shadow-pill">
+        <span>
+          <span className="block text-caption text-muted">{t('booking.guests')}</span>
+          <span className="tabular text-[15px] font-medium">{t('booking.guestsN', { n: guests })}</span>
+        </span>
+        <span className="flex items-center gap-2">
+          <button type="button" className="press flex h-11 w-11 items-center justify-center rounded-full bg-surface-sunken disabled:opacity-40" onClick={() => setGuests((g) => Math.max(1, g - 1))} disabled={guests <= 1} aria-label={t('booking.fewerGuests')}>
+            <MinusIcon size={16} />
+          </button>
+          <button type="button" className="press flex h-11 w-11 items-center justify-center rounded-full bg-surface-sunken disabled:opacity-40" onClick={() => setGuests((g) => Math.min(maxGuests, g + 1))} disabled={guests >= maxGuests} aria-label={t('booking.moreGuests')}>
+            <PlusIcon size={16} />
+          </button>
+        </span>
       </div>
       {(l.checkInTime || l.checkOutTime || minNights > 1) && (
-        <p className="mt-2 text-xs text-muted">
+        <p className="mt-3 text-caption text-muted">
           {l.checkInTime && `${t('booking.checkInFrom')} ${l.checkInTime}`}
           {l.checkOutTime && ` · ${t('booking.checkOutUntil')} ${l.checkOutTime}`}
           {minNights > 1 && ` · ${t('booking.minNights', { n: minNights })}`}
@@ -114,27 +113,31 @@ export function BookingWidget({ l }: { l: ListingDetail }) {
       )}
 
       {ready && (
-        <div className="mt-4 space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted">
-              {formatPrice(l.price, l.currency)} × {t('booking.nightsN', { n: nights })}
-            </span>
-            <span>{formatMoney(subtotal, l.currency)}</span>
+        <dl className="mt-5 space-y-2 text-[14px]">
+          <div className="flex justify-between gap-3">
+            <dt className="text-ink-secondary">
+              <Money value={l.price} currency={l.currency} /> × {t('booking.nightsN', { n: nights })}
+            </dt>
+            <dd>
+              <Money value={subtotal} currency={l.currency} minor />
+            </dd>
           </div>
-          <div className="flex justify-between">
-            <span className="text-muted">{t('booking.serviceFee')}</span>
-            <span>{formatMoney(guestFee, l.currency)}</span>
+          <div className="flex justify-between gap-3">
+            <dt className="text-ink-secondary">{t('booking.serviceFee')}</dt>
+            <dd>
+              <Money value={guestFee} currency={l.currency} minor />
+            </dd>
           </div>
-          <div className="flex justify-between border-t border-line pt-2 text-base font-bold">
-            <span>{t('booking.total')}</span>
-            <span className="flex items-center gap-2">
-              {quote.isFetching && <Spinner size={14} className="text-brand" />}
-              {formatMoney(total, l.currency)}
-            </span>
+          <div className="flex items-end justify-between gap-3 border-t border-hairline pt-3">
+            <dt className="font-medium">{t('booking.total')}</dt>
+            <dd className="flex items-center gap-2">
+              {quote.isFetching && <Spinner size={14} />}
+              <Money value={total} currency={l.currency} minor className="font-display text-[24px] leading-none tracking-[-0.5px]" />
+            </dd>
           </div>
-          {unavailable && <Alert tone="error">{q?.unavailableReason || t('booking.unavailable')}</Alert>}
-          {quote.isError && <p className="text-xs text-muted">{t('booking.quotePreview')}</p>}
-        </div>
+          {unavailable && <Notice tone="error">{q?.unavailableReason || t('booking.unavailable')}</Notice>}
+          {quote.isError && <p className="text-caption text-muted">{t('booking.quotePreview')}</p>}
+        </dl>
       )}
 
       {ready && !unavailable && (
@@ -143,25 +146,20 @@ export function BookingWidget({ l }: { l: ListingDetail }) {
         </div>
       )}
 
-      <Button
-        size="lg"
-        className="mt-4 w-full"
-        disabled={!!unavailable || l.isOwner}
-        loading={reserve.isPending}
-        onClick={() => (ready ? gate(() => reserve.mutate()) : setPicker(true))}
-      >
+      <Button size="lg" className="mt-5 w-full" disabled={!!unavailable || l.isOwner} loading={reserve.isPending} onClick={() => (ready ? gate(() => reserve.mutate()) : setPicker(true))}>
         {ready ? t('booking.reserve') : t('booking.checkAvailability')}
       </Button>
-      {reserve.isError && <p className="mt-2 text-sm text-urgent">{errorMessage(reserve.error, t)}</p>}
-      <div className="mt-3 flex items-start gap-2 text-xs text-muted">
-        <ShieldCheckIcon size={16} className="shrink-0 text-brand" />
+      {reserve.isError && <p className="mt-2 text-label text-danger">{errorMessage(reserve.error, t)}</p>}
+      <p className="mt-4 flex items-start gap-2 text-caption text-ink-secondary">
+        <ShieldCheckIcon size={16} className="shrink-0" />
         <span>{t('booking.policy', { hours: DEFAULT_SETTINGS.freeCancellationHours })}</span>
-      </div>
+      </p>
 
       <Modal
         open={picker}
         onClose={() => setPicker(false)}
         title={t('booking.selectDates')}
+        sub={ready ? t('booking.nightsSelected', { n: nights }) : checkIn ? t('booking.pickCheckOut') : t('booking.pickCheckIn')}
         size="lg"
         footer={
           <>
@@ -174,8 +172,12 @@ export function BookingWidget({ l }: { l: ListingDetail }) {
           </>
         }
       >
-        {avail.isLoading && <p className="mb-2 flex items-center gap-2 text-sm text-muted"><Spinner size={14} /> {t('booking.loadingAvailability')}</p>}
-        {avail.isError && <Alert tone="warning" className="mb-3">{t('booking.availabilityError')}</Alert>}
+        {avail.isLoading && (
+          <p className="mb-3 flex items-center gap-2 text-label text-muted">
+            <Spinner size={14} /> {t('booking.loadingAvailability')}
+          </p>
+        )}
+        {avail.isError && <Notice tone="warning" className="mb-3">{t('booking.availabilityError')}</Notice>}
         <DateRangePicker
           checkIn={checkIn}
           checkOut={checkOut}
@@ -186,10 +188,7 @@ export function BookingWidget({ l }: { l: ListingDetail }) {
             setCheckOut(b);
           }}
         />
-        <p className="mt-3 text-sm text-muted">
-          {ready ? t('booking.nightsSelected', { n: nights }) : checkIn ? t('booking.pickCheckOut') : t('booking.pickCheckIn')}
-        </p>
       </Modal>
-    </div>
+    </section>
   );
 }

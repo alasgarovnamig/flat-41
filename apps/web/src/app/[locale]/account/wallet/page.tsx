@@ -3,19 +3,16 @@
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { DEFAULT_SETTINGS, formatMoney, topupBonus, type PlatformSettings } from '@evtap/shared';
+import { DEFAULT_SETTINGS, formatMoney, topupBonus, type PlatformSettings, type WalletTransaction } from '@evtap/shared';
 import { api } from '@/lib/api';
 import { errorMessage } from '@/lib/errors';
 import { followCheckout, paymentReturnUrl } from '@/lib/payments';
 import { qk } from '@/lib/query-keys';
+import { dailyCounts } from '@/lib/series';
 import { cn } from '@/lib/utils';
-import { PageHeader } from '@/components/account/PageHeader';
+import { BarcodeSpark, Button, Card, CardHeader, ChoicePills, DataTable, EmptyState, ErrorState, Input, Money, PageHeader, Pagination, RowCard, Skeleton, type Column } from '@/components/ds';
+import { CardIcon, WalletIcon } from '@/components/ds/icons';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { Button } from '@/components/ui/Button';
-import { EmptyState, ErrorState, Skeleton } from '@/components/ui/feedback';
-import { Input } from '@/components/ui/form';
-import { CardIcon, WalletIcon } from '@/components/ui/icons';
-import { Pagination } from '@/components/ui/Pagination';
 
 const QUICK = [10, 20, 50, 100, 300];
 
@@ -36,39 +33,54 @@ export default function WalletPage() {
     onSuccess: (c) => followCheckout(c, locale, router.push),
   });
   const tiers = [...settings.topupBonuses].sort((a, b) => a.minAmount - b.minAmount);
+  const spark = dailyCounts((tx.data?.items ?? []).map((x) => x.createdAt), 28);
+  const cur = wallet.data?.currency;
+
+  const columns: Column<WalletTransaction>[] = [
+    { key: 'date', header: t('common.date'), cell: (x) => <span className="whitespace-nowrap text-ink-secondary">{dateTime(x.createdAt)}</span> },
+    { key: 'type', header: t('wallet.type'), cell: (x) => t(`enums.walletTx.${x.type}`) },
+    { key: 'desc', header: t('result.description'), cell: (x) => <span className="line-clamp-1">{x.description}</span>, minWidth: 'lg' },
+    { key: 'amount', header: t('common.amount'), align: 'right', cell: (x) => <Money value={x.amount} minor signed className={cn('font-medium', x.amount >= 0 ? 'text-success' : 'text-danger')} /> },
+    { key: 'after', header: t('wallet.balanceAfter'), align: 'right', cell: (x) => <Money value={x.balanceAfter} minor />, minWidth: 'md' },
+  ];
 
   return (
     <div>
       <PageHeader title={t('account.nav.wallet')} sub={t('wallet.sub')} />
-      <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
-        <div className="rounded-card bg-gradient-to-br from-brand to-brand-dark p-6 text-white shadow-card">
-          <div className="flex items-center gap-2 text-sm text-white/80"><WalletIcon size={18} /> {t('account.wallet.balance')}</div>
-          {wallet.isLoading ? (
-            <Skeleton className="mt-3 h-10 w-40 opacity-30" />
-          ) : wallet.isError ? (
-            <div className="mt-3 text-sm">{errorMessage(wallet.error, t)}</div>
-          ) : (
-            <>
-              <div className="mt-2 text-4xl font-extrabold tracking-tight">{formatMoney((wallet.data?.balance ?? 0) + (wallet.data?.bonusBalance ?? 0), wallet.data?.currency)}</div>
-              <div className="mt-2 flex gap-4 text-sm text-white/80">
-                <span>{t('wallet.main')}: {formatMoney(wallet.data?.balance ?? 0, wallet.data?.currency)}</span>
-                <span>{t('wallet.bonus')}: {formatMoney(wallet.data?.bonusBalance ?? 0, wallet.data?.currency)}</span>
-              </div>
-            </>
-          )}
-          <p className="mt-4 text-xs text-white/70">{t('wallet.bonusNote')}</p>
-        </div>
-
-        <div className="card p-5">
-          <h2 className="font-semibold">{t('wallet.topup')}</h2>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {QUICK.map((q) => (
-              <button key={q} type="button" onClick={() => setAmount(String(q))} className={cn('rounded-full border px-3.5 py-1.5 text-sm font-semibold', Number(amount) === q ? 'border-brand bg-brand text-white' : 'border-line hover:border-ink/30')}>
-                {q} ₼
-              </button>
-            ))}
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+        <Card tone="ink" className="flex flex-col justify-between gap-6">
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-2 text-label opacity-80">
+              <WalletIcon size={18} /> {t('account.wallet.balance')}
+            </span>
+            <BarcodeSpark values={spark} label={t('overview.walletActivity')} inverse />
           </div>
-          <div className="mt-3">
+          {wallet.isLoading ? (
+            <Skeleton className="h-12 w-48 rounded-md opacity-30" />
+          ) : wallet.isError ? (
+            <div className="text-label">{errorMessage(wallet.error, t)}</div>
+          ) : (
+            <div>
+              <Money value={(wallet.data?.balance ?? 0) + (wallet.data?.bonusBalance ?? 0)} currency={cur} minor className="font-display text-[48px] font-light leading-none tracking-[-1.6px]" symbolClassName="text-subtle" />
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <div className="rounded-lg bg-on-ink/10 p-3">
+                  <div className="text-caption opacity-70">{t('wallet.main')}</div>
+                  <Money value={wallet.data?.balance ?? 0} currency={cur} minor className="text-[17px] font-medium" symbolClassName="text-subtle" />
+                </div>
+                <div className="rounded-lg bg-on-ink/10 p-3">
+                  <div className="text-caption opacity-70">{t('wallet.bonus')}</div>
+                  <Money value={wallet.data?.bonusBalance ?? 0} currency={cur} minor className="text-[17px] font-medium" symbolClassName="text-subtle" />
+                </div>
+              </div>
+            </div>
+          )}
+          <p className="text-caption opacity-70">{t('wallet.bonusNote')}</p>
+        </Card>
+
+        <Card>
+          <CardHeader title={t('wallet.topup')} />
+          <ChoicePills size="sm" ariaLabel={t('common.amount')} value={Number(amount)} onChange={(v) => v != null && setAmount(String(v))} options={QUICK.map((q) => ({ value: q, label: `${q} ₼` }))} />
+          <div className="mt-4">
             <Input
               label={t('common.amount')}
               inputMode="decimal"
@@ -78,64 +90,53 @@ export default function WalletPage() {
               error={amount && invalid ? t('wallet.range', { min: formatMoney(settings.minTopup), max: formatMoney(settings.maxTopup) }) : undefined}
             />
           </div>
-          <div className="mt-3 rounded-xl bg-surface p-3 text-sm">
-            <div className="flex justify-between"><span className="text-muted">{t('wallet.youPay')}</span><b>{formatMoney(minor)}</b></div>
-            <div className="flex justify-between"><span className="text-muted">{t('wallet.bonusAdded')}</span><b className="text-brand">+{formatMoney(bonus)}</b></div>
-            <div className="mt-1 flex justify-between border-t border-line pt-1"><span>{t('wallet.youGet')}</span><b>{formatMoney(minor + bonus)}</b></div>
-          </div>
-          <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
-            {tiers.map((tier) => (
-              <div key={tier.minAmount} className={cn('rounded-lg border p-2', minor >= tier.minAmount ? 'border-brand bg-brand-50 text-brand-dark' : 'border-line text-muted')}>
-                <div className="text-base font-bold">+{tier.bonusPercent}%</div>
-                {t('wallet.from', { amount: formatMoney(tier.minAmount) })}
-              </div>
-            ))}
-          </div>
-          <Button size="lg" className="mt-4 w-full" icon={<CardIcon size={18} />} disabled={invalid} loading={topup.isPending} onClick={() => topup.mutate()}>
+          <dl className="mt-4 space-y-2 rounded-lg bg-surface-raised p-4 text-[14px] shadow-pill">
+            <div className="flex justify-between"><dt className="text-ink-secondary">{t('wallet.youPay')}</dt><dd><Money value={minor} minor /></dd></div>
+            <div className="flex justify-between"><dt className="text-ink-secondary">{t('wallet.bonusAdded')}</dt><dd className="font-medium text-success">+<Money value={bonus} minor /></dd></div>
+            <div className="flex items-end justify-between border-t border-hairline pt-2"><dt className="font-medium">{t('wallet.youGet')}</dt><dd><Money value={minor + bonus} minor className="font-display text-[22px] leading-none" /></dd></div>
+          </dl>
+          <ul className="mt-3 grid grid-cols-3 gap-2 text-center">
+            {tiers.map((tier) => {
+              const on = minor >= tier.minAmount;
+              return (
+                <li key={tier.minAmount} className={cn('rounded-lg p-2.5', on ? 'bg-ink text-on-ink' : 'bg-surface-sunken text-ink-secondary')}>
+                  <div className="font-display text-[20px] leading-tight">+{tier.bonusPercent}%</div>
+                  <div className="text-[11px] opacity-80">{t('wallet.from', { amount: formatMoney(tier.minAmount) })}</div>
+                </li>
+              );
+            })}
+          </ul>
+          <Button size="lg" className="mt-5 w-full" icon={<CardIcon size={18} />} disabled={invalid} loading={topup.isPending} onClick={() => topup.mutate()}>
             {t('wallet.payCard', { amount: formatMoney(minor) })}
           </Button>
-        </div>
+        </Card>
       </div>
 
-      <h2 className="mb-3 mt-8 text-lg font-semibold">{t('wallet.transactions')}</h2>
-      {tx.isLoading ? (
-        <Skeleton className="h-40" />
-      ) : tx.isError ? (
-        <ErrorState title={t('wallet.loadError')} text={errorMessage(tx.error, t)} onRetry={() => void tx.refetch()} retryLabel={t('common.retry')} />
-      ) : !tx.data?.items.length ? (
-        <EmptyState icon={<WalletIcon />} title={t('wallet.empty')} />
-      ) : (
-        <>
-          <div className="card overflow-x-auto">
-            <table className="w-full min-w-[560px] text-sm">
-              <thead className="border-b border-line bg-surface text-left text-xs uppercase tracking-wide text-muted">
-                <tr>
-                  <th className="px-4 py-2.5 font-semibold">{t('common.date')}</th>
-                  <th className="px-4 py-2.5 font-semibold">{t('wallet.type')}</th>
-                  <th className="px-4 py-2.5 font-semibold">{t('result.description')}</th>
-                  <th className="px-4 py-2.5 text-right font-semibold">{t('common.amount')}</th>
-                  <th className="px-4 py-2.5 text-right font-semibold">{t('wallet.balanceAfter')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {tx.data.items.map((x) => (
-                  <tr key={x.id}>
-                    <td className="whitespace-nowrap px-4 py-2.5 text-muted">{dateTime(x.createdAt)}</td>
-                    <td className="px-4 py-2.5">{t(`enums.walletTx.${x.type}`)}</td>
-                    <td className="px-4 py-2.5">{x.description}</td>
-                    <td className={cn('whitespace-nowrap px-4 py-2.5 text-right font-semibold tabular-nums', x.amount >= 0 ? 'text-brand' : 'text-urgent')}>
-                      {x.amount >= 0 ? '+' : '−'}
-                      {formatMoney(Math.abs(x.amount))}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-2.5 text-right tabular-nums">{formatMoney(x.balanceAfter)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <Pagination className="mt-4" page={page} total={tx.data.total} pageSize={15} onChange={setPage} />
-        </>
-      )}
+      <div className="mt-6">
+        {tx.isError ? (
+          <ErrorState title={t('wallet.loadError')} text={errorMessage(tx.error, t)} onRetry={() => void tx.refetch()} retryLabel={t('common.retry')} />
+        ) : (
+          <DataTable
+            caption={t('wallet.transactions')}
+            loading={tx.isLoading}
+            columns={columns}
+            rows={tx.data?.items}
+            rowKey={(x) => x.id}
+            toolbar={<h2 className="px-2 text-h3">{t('wallet.transactions')}</h2>}
+            empty={<EmptyState className="shadow-none" icon={<WalletIcon />} title={t('wallet.empty')} />}
+            mobileRow={(x) => (
+              <RowCard className="flex items-center justify-between gap-3">
+                <span className="min-w-0">
+                  <span className="block truncate font-medium">{t(`enums.walletTx.${x.type}`)}</span>
+                  <span className="block truncate text-caption text-muted">{dateTime(x.createdAt)}</span>
+                </span>
+                <Money value={x.amount} minor signed className={cn('font-medium', x.amount >= 0 ? 'text-success' : 'text-danger')} />
+              </RowCard>
+            )}
+            footer={tx.data && <Pagination className="mt-4" page={page} total={tx.data.total} pageSize={15} onChange={setPage} labels={{ prev: t('common.prev'), next: t('common.next'), nav: t('common.pagination') }} />}
+          />
+        )}
+      </div>
     </div>
   );
 }

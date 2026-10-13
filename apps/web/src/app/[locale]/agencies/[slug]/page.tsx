@@ -5,8 +5,8 @@ import { formatPhone, getCity, localized, type Agency } from '@evtap/shared';
 import { AgencyLogo } from '@/components/agencies/AgenciesView';
 import { OwnerListings } from '@/components/listings/OwnerListings';
 import { RetryError } from '@/components/RetryError';
-import { Badge } from '@/components/ui/feedback';
-import { PhoneIcon, PinIcon, ShieldCheckIcon } from '@/components/ui/icons';
+import { Badge, BigNumber, Card } from '@/components/ds';
+import { GlobeIcon, PhoneIcon, PinIcon, SendIcon } from '@/components/ds/icons';
 import { api, isApiError } from '@/lib/api';
 import { WEB_URL, assetUrl } from '@/lib/config';
 import { formatDate, toLocale } from '@/lib/i18n';
@@ -36,6 +36,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+const chip = 'inline-flex h-10 items-center gap-2 rounded-pill bg-surface-raised px-4 text-label shadow-pill';
+
 export default async function AgencyPage({ params }: Props) {
   const { locale: raw, slug } = await params;
   const locale = toLocale(raw);
@@ -57,29 +59,47 @@ export default async function AgencyPage({ params }: Props) {
   return (
     <div className="container-page py-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
-      <div className="card mb-8 flex flex-col gap-5 p-6 sm:flex-row">
-        <AgencyLogo a={a} size={96} />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-bold sm:text-3xl">{a.name}</h1>
-            {a.verified && (
-              <Badge tone="brand" icon={<ShieldCheckIcon size={12} />}>
-                {t('agency.verified')}
-              </Badge>
-            )}
-            <Badge tone={a.type === 'DEVELOPER' ? 'blue' : 'gray'}>{t(`enums.agencyType.${a.type}`)}</Badge>
+      <div className="mb-8 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <Card pad="lg" className="flex flex-col gap-6 sm:flex-row">
+          <AgencyLogo a={a} size={104} />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-h1">{a.name}</h1>
+              {a.verified && <Badge tone="verified" size="md">{t('agency.verified')}</Badge>}
+              <Badge tone={a.type === 'DEVELOPER' ? 'info' : 'business'} size="md">{t(`enums.agencyType.${a.type}`)}</Badge>
+            </div>
+            {a.description && <p className="mt-3 whitespace-pre-line leading-relaxed text-ink-secondary">{a.description}</p>}
+            <div className="mt-5 flex flex-wrap gap-2">
+              {city && (
+                <span className={chip}>
+                  <PinIcon size={16} /> {[city, a.address].filter(Boolean).join(', ')}
+                </span>
+              )}
+              {a.phone && (
+                <a href={`tel:${a.phone}`} className="press inline-flex h-10 items-center gap-2 rounded-pill bg-ink px-4 text-label font-medium text-on-ink">
+                  <PhoneIcon size={16} /> {formatPhone(a.phone)}
+                </a>
+              )}
+              {a.email && (
+                <a href={`mailto:${a.email}`} className={chip}>
+                  <SendIcon size={16} /> {a.email}
+                </a>
+              )}
+              {a.website && (
+                <a href={a.website} target="_blank" rel="noopener nofollow" className={chip}>
+                  <GlobeIcon size={16} /> {a.website.replace(/^https?:\/\//, '')}
+                </a>
+              )}
+            </div>
           </div>
-          <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted">
-            {city && <span className="flex items-center gap-1"><PinIcon size={14} /> {[city, a.address].filter(Boolean).join(', ')}</span>}
-            {a.phone && <a href={`tel:${a.phone}`} className="flex items-center gap-1 font-semibold text-brand"><PhoneIcon size={14} /> {formatPhone(a.phone)}</a>}
-            {a.email && <a href={`mailto:${a.email}`} className="hover:text-ink">{a.email}</a>}
-            {a.website && <a href={a.website} target="_blank" rel="noopener nofollow" className="hover:text-ink">{a.website.replace(/^https?:\/\//, '')}</a>}
+        </Card>
+        <Card className="flex flex-col justify-between gap-6">
+          <div className="text-h3">{t('agencies.activeListings')}</div>
+          <div>
+            <BigNumber size="xl">{a.activeListings}</BigNumber>
+            <div className="mt-1 text-label font-normal text-ink-secondary">{t('agencies.since', { date: formatDate(a.createdAt, locale, { month: 'long', year: 'numeric' }) })}</div>
           </div>
-          {a.description && <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-ink/80">{a.description}</p>}
-          <div className="mt-3 text-xs text-muted">
-            {t('agencies.listingsN', { n: a.activeListings })} · {t('agencies.since', { date: formatDate(a.createdAt, locale, { month: 'long', year: 'numeric' }) })}
-          </div>
-        </div>
+        </Card>
       </div>
       <OwnerListings agencyId={a.id} />
     </div>

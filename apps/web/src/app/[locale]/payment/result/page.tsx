@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { PaymentResult } from '@/components/payments/PaymentResult';
-import { PageSpinner } from '@/components/ui/feedback';
+import { PageSpinner } from '@/components/ds';
 import { toLocale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n.server';
 

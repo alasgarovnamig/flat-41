@@ -132,8 +132,11 @@ export function toInput(f: WizardForm): CreateListingInput {
 
 const s = (v: number | null | undefined) => (v == null ? '' : String(v));
 
-/** Existing listing → wizard state (edit mode). */
-export function fromListing(l: ListingDetail, phone: string): WizardForm {
+/**
+ * Existing listing → wizard state (edit mode). Photos keep their `uploadId` (sent back as imageIds); the owner-only
+ * `contactPhone` from the detail DTO prefills the phone (no /phone reveal call).
+ */
+export function fromListing(l: ListingDetail, fallbackPhone = ''): WizardForm {
   return {
     dealType: l.dealType,
     propertyType: l.propertyType,
@@ -166,7 +169,7 @@ export function fromListing(l: ListingDetail, phone: string): WizardForm {
     title: l.title,
     description: l.description,
     contactName: l.contactName,
-    contactPhone: phone,
-    photos: [...l.images].sort((a, b) => a.order - b.order).map((i) => ({ key: i.id, id: i.id, url: i.url, thumbUrl: i.thumbUrl })),
+    contactPhone: l.contactPhone ?? fallbackPhone,
+    photos: [...l.images].sort((a, b) => a.order - b.order).map((i) => ({ key: i.id, id: i.uploadId ?? i.id, url: i.url, thumbUrl: i.thumbUrl })),
   };
 }

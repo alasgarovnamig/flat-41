@@ -2,27 +2,30 @@
 
 import Link from 'next/link';
 import { CITIES, localized } from '@evtap/shared';
+import type { CmsPageLink } from '@/lib/api';
+import { STATIC_PAGE_SLUGS, isLegalSlug, staticPageKey } from '@/lib/cms';
+import { Card } from '@/components/ds';
+import { AppleIcon, PlayIcon } from '@/components/ds/icons';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { AppleIcon, PlayIcon } from '@/components/ui/icons';
 import { Logo } from './Logo';
 
-export function StoreBadges({ dark = true }: { dark?: boolean }) {
+export function StoreBadges({ className }: { className?: string }) {
   const { t } = useI18n();
-  const cls = dark ? 'bg-ink text-white hover:bg-black' : 'bg-white text-ink hover:bg-white/90';
+  const cls = 'press flex h-12 items-center gap-2.5 rounded-pill bg-ink pl-4 pr-5 text-on-ink hover:bg-ink-secondary';
   return (
-    <div className="flex flex-wrap gap-2">
-      <a href="#" aria-label="App Store" className={`flex h-11 items-center gap-2 rounded-xl px-3.5 ${cls}`}>
-        <AppleIcon size={22} />
+    <div className={`flex flex-wrap gap-2 ${className ?? ''}`}>
+      <a href="#" aria-label="App Store" className={cls}>
+        <AppleIcon size={20} />
         <span className="flex flex-col leading-none">
-          <span className="text-[10px] opacity-75">{t('footer.downloadOn')}</span>
-          <span className="text-sm font-semibold">App Store</span>
+          <span className="text-[10px] opacity-70">{t('footer.downloadOn')}</span>
+          <span className="text-[14px] font-medium">App Store</span>
         </span>
       </a>
-      <a href="#" aria-label="Google Play" className={`flex h-11 items-center gap-2 rounded-xl px-3.5 ${cls}`}>
+      <a href="#" aria-label="Google Play" className={cls}>
         <PlayIcon size={18} />
         <span className="flex flex-col leading-none">
-          <span className="text-[10px] opacity-75">{t('footer.getItOn')}</span>
-          <span className="text-sm font-semibold">Google Play</span>
+          <span className="text-[10px] opacity-70">{t('footer.getItOn')}</span>
+          <span className="text-[14px] font-medium">Google Play</span>
         </span>
       </a>
     </div>
@@ -36,8 +39,17 @@ const SOCIAL = [
   { name: 'YouTube', href: 'https://youtube.com/', d: 'M22 8.2a3 3 0 0 0-2.1-2.1C18 5.5 12 5.5 12 5.5s-6 0-7.9.6A3 3 0 0 0 2 8.2 31 31 0 0 0 1.5 12 31 31 0 0 0 2 15.8a3 3 0 0 0 2.1 2.1c1.9.6 7.9.6 7.9.6s6 0 7.9-.6a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-3.8 31 31 0 0 0-.5-3.8zM10 15V9l5.2 3z' },
 ];
 
-export function Footer() {
+/** CMS links: from GET /pages when available, else the static slugs with translated titles. */
+export function usePageLinks(pages: CmsPageLink[] | null) {
+  const { t } = useI18n();
+  return pages && pages.length ? pages : STATIC_PAGE_SLUGS.map((slug) => ({ slug, title: t(staticPageKey(slug)) }));
+}
+
+export function Footer({ pages }: { pages: CmsPageLink[] | null }) {
   const { t, href, locale } = useI18n();
+  const links = usePageLinks(pages);
+  const company = links.filter((p) => !isLegalSlug(p.slug));
+  const legal = links.filter((p) => isLegalSlug(p.slug));
   const cols = [
     {
       title: t('footer.platform'),
@@ -49,36 +61,20 @@ export function Footer() {
         { href: href('/listings/new'), label: t('nav.postAd') },
       ],
     },
-    {
-      title: t('footer.company'),
-      links: [
-        { href: href('/pages/about'), label: t('footer.about') },
-        { href: href('/business'), label: t('nav.business') },
-        { href: href('/pages/pricing-info'), label: t('footer.pricingInfo') },
-        { href: href('/pages/help'), label: t('footer.help') },
-      ],
-    },
-    {
-      title: t('footer.legal'),
-      links: [
-        { href: href('/pages/terms'), label: t('footer.terms') },
-        { href: href('/pages/privacy'), label: t('footer.privacy') },
-      ],
-    },
-  ];
+    { title: t('footer.company'), links: [...company.map((p) => ({ href: href(`/pages/${p.slug}`), label: p.title })), { href: href('/business'), label: t('nav.business') }] },
+    { title: t('footer.legal'), links: legal.map((p) => ({ href: href(`/pages/${p.slug}`), label: p.title })) },
+  ].filter((c) => c.links.length);
   const popular = CITIES.filter((c) => c.popular).slice(0, 6);
   return (
-    <footer className="mt-16 bg-ink text-white/80">
-      <div className="container-page grid gap-10 py-12 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+    <footer className="container-page mt-16 pb-4 sm:pb-6">
+      <Card pad="lg" className="grid gap-10 md:grid-cols-[1.5fr_repeat(3,1fr)]">
         <div>
-          <Logo href={href('/')} light />
-          <p className="mt-3 max-w-xs text-sm text-white/60">{t('footer.tagline')}</p>
-          <div className="mt-5">
-            <StoreBadges dark={false} />
-          </div>
+          <Logo href={href('/')} />
+          <p className="mt-4 max-w-xs text-label font-normal text-ink-secondary">{t('footer.tagline')}</p>
+          <StoreBadges className="mt-6" />
           <div className="mt-5 flex gap-2">
             {SOCIAL.map((s) => (
-              <a key={s.name} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.name} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-white/20">
+              <a key={s.name} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.name} title={s.name} className="press flex h-11 w-11 items-center justify-center rounded-full bg-surface-sunken text-ink hover:bg-pill">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                   <path d={s.d} />
                 </svg>
@@ -87,32 +83,34 @@ export function Footer() {
           </div>
         </div>
         {cols.map((c) => (
-          <div key={c.title}>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-white">{c.title}</h3>
-            <ul className="space-y-2 text-sm">
+          <nav key={c.title} aria-label={c.title}>
+            <h2 className="mb-3 font-sans text-caption font-normal text-muted">{c.title}</h2>
+            <ul className="space-y-1">
               {c.links.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="hover:text-white">
+                  <Link href={l.href} className="inline-flex min-h-9 items-center text-[14px] text-ink hover:underline hover:underline-offset-4">
                     {l.label}
                   </Link>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
         ))}
-      </div>
-      <div className="border-t border-white/10">
-        <div className="container-page flex flex-col gap-3 py-5 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
-          <span>© {new Date().getFullYear()} EvTap. {t('footer.rights')}</span>
-          <span className="flex flex-wrap gap-x-3 gap-y-1">
-            {popular.map((c) => (
-              <Link key={c.id} href={href(`/search?cityId=${c.id}`)} className="hover:text-white">
-                {localized(c.name, locale)}
-              </Link>
-            ))}
+        <div className="flex flex-col gap-4 border-t border-hairline pt-6 md:col-span-4 md:flex-row md:items-center md:justify-between">
+          <span className="text-caption text-muted">
+            © {new Date().getFullYear()} EvTap. {t('footer.rights')}
           </span>
+          <ul className="flex flex-wrap gap-2">
+            {popular.map((c) => (
+              <li key={c.id}>
+                <Link href={href(`/search?cityId=${c.id}`)} className="press inline-flex h-9 items-center rounded-pill bg-surface-sunken px-3.5 text-label text-ink hover:bg-pill">
+                  {localized(c.name, locale)}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
+      </Card>
     </footer>
   );
 }

@@ -15,56 +15,30 @@ import { LocationPicker } from '@/components/map';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
 import { useToast } from '@/components/providers/ToastProvider';
-import { Button, LinkButton } from '@/components/ui/Button';
-import { Alert } from '@/components/ui/feedback';
-import { Checkbox, Chips, Input, Select, Textarea, Toggle } from '@/components/ui/form';
-import { ArrowUpIcon, BuildingIcon, CalendarIcon, CheckIcon, HomeIcon, PinIcon } from '@/components/ui/icons';
+import { Button, Card, Checkbox, ChoicePills, Input, LinkButton, MapCard, Money, Notice, PageHeader, PillStepper, Select, Textarea, Toggle } from '@/components/ds';
+import { ArrowLeftIcon, ArrowRightIcon, ArrowUpIcon, ArrowUpRightIcon, BuildingIcon, CalendarIcon, CheckIcon, HomeIcon, PinIcon, SparklesIcon } from '@/components/ds/icons';
 import { ListingFeePayment } from './ListingFeePayment';
 import { PhotoUploader } from './PhotoUploader';
 import { STEPS, STEP_FIELDS, emptyForm, toInput, type Step, type WizardForm } from './wizard-model';
 
 const DRAFT_KEY = 'evtap.listingDraft';
 
-function StepHeader({ step, current, onJump, done }: { step: Step; current: number; onJump: (i: number) => void; done: Set<number> }) {
-  const { t } = useI18n();
+/** Selectable card: white raised; selected = ink outline + black icon circle + check. */
+function ChoiceCard({ active, onClick, icon, title, sub }: { active: boolean; onClick: () => void; icon: React.ReactNode; title: string; sub?: string }) {
   return (
-    <div className="mb-6">
-      <p className="mb-2 text-sm font-semibold text-brand sm:hidden">
-        {t('wizard.stepOf', { n: current + 1, total: STEPS.length })}: {t(`wizard.steps.${step}`)}
-      </p>
-      <ol className="flex gap-1.5" aria-label={t('wizard.progress')}>
-        {STEPS.map((s, i) => (
-          <li key={s} className="min-w-0 flex-1">
-            <button
-              type="button"
-              onClick={() => onJump(i)}
-              disabled={i > current && !done.has(i - 1)}
-              aria-current={s === step ? 'step' : undefined}
-              aria-label={`${i + 1}. ${t(`wizard.steps.${s}`)}`}
-              className="group flex w-full flex-col gap-1.5 text-left disabled:cursor-not-allowed"
-            >
-              <span className={cn('h-1.5 w-full rounded-full transition-colors', i < current || done.has(i) ? 'bg-brand' : i === current ? 'bg-brand/60' : 'bg-ink/10')} />
-              <span className={cn('hidden truncate text-xs font-semibold sm:block', i === current ? 'text-brand' : 'text-muted')}>
-                {i + 1}. {t(`wizard.steps.${s}`)}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ol>
-    </div>
+    <button type="button" onClick={onClick} aria-pressed={active} className={cn('press relative flex items-start gap-3 rounded-lg bg-surface-raised p-4 text-left shadow-pill', active ? 'ring-[1.5px] ring-inset ring-ink' : 'hover:bg-surface-sunken')}>
+      <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-full', active ? 'bg-ink text-on-ink' : 'bg-surface-sunken text-ink')}>{icon}</span>
+      <span className="min-w-0 pr-5">
+        <span className="block font-medium">{title}</span>
+        {sub && <span className="mt-0.5 block text-caption text-muted">{sub}</span>}
+      </span>
+      {active && <CheckIcon size={18} className="absolute right-4 top-4" />}
+    </button>
   );
 }
 
-function ChoiceCard({ active, onClick, icon, title, sub }: { active: boolean; onClick: () => void; icon: React.ReactNode; title: string; sub?: string }) {
-  return (
-    <button type="button" onClick={onClick} aria-pressed={active} className={cn('flex items-start gap-3 rounded-xl border p-4 text-left transition-colors', active ? 'border-brand bg-brand-50 ring-1 ring-brand' : 'border-line bg-white hover:border-ink/30')}>
-      <span className={cn('mt-0.5', active ? 'text-brand' : 'text-muted')}>{icon}</span>
-      <span>
-        <span className="block font-semibold">{title}</span>
-        {sub && <span className="mt-0.5 block text-xs text-muted">{sub}</span>}
-      </span>
-    </button>
-  );
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return <div className="mb-2.5 text-label text-ink-secondary">{children}</div>;
 }
 
 export function ListingWizard({ mode, initial, listingId }: { mode: 'create' | 'edit'; initial?: WizardForm; listingId?: string }) {
@@ -200,49 +174,59 @@ export function ListingWizard({ mode, initial, listingId }: { mode: 'create' | '
   if (created) {
     if (created.requiresPayment || created.status === 'DRAFT') return <ListingFeePayment listing={created} />;
     return (
-      <div className="mx-auto max-w-xl rounded-2xl border border-line bg-white p-8 text-center shadow-card">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand-50 text-brand">
-          <CheckIcon size={32} strokeWidth={2.5} />
+      <Card pad="lg" className="mx-auto max-w-xl text-center">
+        <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-full bg-ink text-on-ink">
+          <CheckIcon size={32} strokeWidth={2} />
         </div>
-        <h1 className="mt-4 text-2xl font-bold">{t('wizard.successTitle')}</h1>
-        <p className="mt-2 text-muted">{created.status === 'PENDING' ? t('wizard.successPending') : t('wizard.successActive')}</p>
-        <div className="mt-6 rounded-xl border border-premium/30 bg-premium-50 p-5 text-left">
-          <div className="flex items-center gap-2 font-semibold text-premium">
+        <h1 className="mt-5 text-h1">{t('wizard.successTitle')}</h1>
+        <p className="mt-2 text-ink-secondary">{created.status === 'PENDING' ? t('wizard.successPending') : t('wizard.successActive')}</p>
+        <div className="mt-7 rounded-lg bg-ink p-5 text-left text-on-ink">
+          <div className="flex items-center gap-2 font-medium">
             <ArrowUpIcon size={18} /> {t('wizard.upsellTitle')}
           </div>
-          <p className="mt-1 text-sm text-ink/80">{t('wizard.upsellText')}</p>
-          <LinkButton href={href(`/listings/${created.id}/promote`)} variant="premium" className="mt-4 w-full">
+          <p className="mt-1 text-label font-normal opacity-75">{t('wizard.upsellText')}</p>
+          <LinkButton href={href(`/listings/${created.id}/promote`)} variant="accent" className="mt-4 w-full" trailing={<ArrowUpRightIcon size={16} />}>
             {t('owner.promote')}
           </LinkButton>
         </div>
         <div className="mt-4 flex flex-wrap justify-center gap-2">
-          <LinkButton href={href(`/listings/${created.id}`)} variant="outline">
+          <LinkButton href={href(`/listings/${created.id}`)} variant="secondary">
             {t('wizard.viewListing')}
           </LinkButton>
           <LinkButton href={href('/account/listings')} variant="ghost">
             {t('account.nav.listings')}
           </LinkButton>
         </div>
-      </div>
+      </Card>
     );
   }
 
   const input = toInput(form);
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <h1 className="mb-1 text-2xl font-bold sm:text-3xl">{mode === 'create' ? t('wizard.title') : t('wizard.editTitle')}</h1>
-      <p className="mb-6 text-muted">{t('wizard.subtitle')}</p>
-      {quotaNote && <Alert tone={quotaNote.tone} className="mb-6">{quotaNote.text}</Alert>}
-      <StepHeader step={step} current={stepIdx} done={done} onJump={(i) => (i <= stepIdx || done.has(i - 1) ? setStepIdx(i) : undefined)} />
+    <div className="mx-auto max-w-4xl">
+      <PageHeader title={mode === 'create' ? t('wizard.title') : t('wizard.editTitle')} sub={t('wizard.subtitle')} className="mb-5" />
+      {quotaNote && <Notice tone={quotaNote.tone} className="mb-5">{quotaNote.text}</Notice>}
+      <div className="mb-5">
+        <PillStepper
+          ariaLabel={t('wizard.progress')}
+          steps={STEPS.map((s) => ({ key: s, label: t(`wizard.steps.${s}`) }))}
+          current={stepIdx}
+          done={done}
+          onJump={(i) => (i <= stepIdx || done.has(i - 1) ? setStepIdx(i) : undefined)}
+        />
+      </div>
 
-      <div className="rounded-2xl border border-line bg-white p-5 shadow-card sm:p-8">
-        <h2 className="mb-5 text-xl font-bold">{t(`wizard.steps.${step}`)}</h2>
+      <Card pad="lg">
+        <div className="mb-6 flex items-baseline justify-between gap-3">
+          <h2 className="text-h2">{t(`wizard.steps.${step}`)}</h2>
+          <span className="tabular text-label text-muted">{t('wizard.stepOf', { n: stepIdx + 1, total: STEPS.length })}</span>
+        </div>
 
         {step === 'type' && (
           <div className="flex flex-col gap-6">
             <div>
-              <div className="mb-2 text-sm font-medium">{t('wizard.dealType')}</div>
+              <div className="mb-2.5 text-label text-ink-secondary">{t('wizard.dealType')}</div>
               <div className="grid gap-3 sm:grid-cols-3">
                 {(['SALE', 'RENT_LONG', 'RENT_DAILY'] as DealType[]).map((d) => (
                   <ChoiceCard key={d} active={form.dealType === d} onClick={() => set('dealType', d)} icon={d === 'RENT_DAILY' ? <CalendarIcon /> : <HomeIcon />} title={t(`enums.dealType.${d}`)} sub={t(`wizard.dealHint.${d}`)} />
@@ -250,12 +234,12 @@ export function ListingWizard({ mode, initial, listingId }: { mode: 'create' | '
               </div>
             </div>
             <div>
-              <div className="mb-2 text-sm font-medium">{t('wizard.propertyType')}</div>
-              <Chips value={pt} onChange={(v) => v && set('propertyType', v as PropertyType)} options={PROPERTY_TYPES.map((p) => ({ value: p as string, label: t(`enums.propertyType.${p}`) }))} />
+              <div className="mb-2.5 text-label text-ink-secondary">{t('wizard.propertyType')}</div>
+              <ChoicePills value={pt} onChange={(v) => v && set('propertyType', v as PropertyType)} options={PROPERTY_TYPES.map((p) => ({ value: p as string, label: t(`enums.propertyType.${p}`) }))} />
             </div>
             {pt === 'APARTMENT' && (
               <div>
-                <div className="mb-2 text-sm font-medium">{t('wizard.buildingType')}</div>
+                <div className="mb-2.5 text-label text-ink-secondary">{t('wizard.buildingType')}</div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {(['NEW', 'SECONDARY'] as const).map((b) => (
                     <ChoiceCard key={b} active={form.buildingType === b} onClick={() => set('buildingType', b)} icon={<BuildingIcon />} title={t(`enums.buildingType.${b}`)} />
@@ -302,17 +286,17 @@ export function ListingWizard({ mode, initial, listingId }: { mode: 'create' | '
             </div>
             <div>
               <div className="mb-2 flex items-center justify-between gap-2 text-sm">
-                <span className="flex items-center gap-1 font-medium"><PinIcon size={16} /> {t('wizard.mapPin')}</span>
+                <span className="flex items-center gap-1.5 text-label text-ink-secondary"><PinIcon size={16} /> {t('wizard.mapPin')}</span>
                 {form.lat != null && (
-                  <button type="button" className="text-xs font-semibold text-muted hover:text-ink" onClick={() => setForm((f) => ({ ...f, lat: null, lng: null }))}>
+                  <Button size="sm" variant="ghost" onClick={() => setForm((f) => ({ ...f, lat: null, lng: null }))}>
                     {t('common.clear')}
-                  </button>
+                  </Button>
                 )}
               </div>
-              <div className="h-80 overflow-hidden rounded-xl border border-line">
+              <MapCard title={t('map.title')} className="h-96" expandable={false}>
                 <LocationPicker lat={form.lat} lng={form.lng} center={[city?.lat ?? 40.4093, city?.lng ?? 49.8671]} onChange={(lat, lng) => setForm((f) => ({ ...f, lat, lng }))} />
-              </div>
-              <p className="mt-1 text-xs text-muted">{form.lat != null ? `${form.lat.toFixed(5)}, ${form.lng?.toFixed(5)}` : t('wizard.mapHint')}</p>
+              </MapCard>
+              <p className="mt-2 text-caption text-muted">{form.lat != null ? `${form.lat.toFixed(5)}, ${form.lng?.toFixed(5)}` : t('wizard.mapHint')}</p>
             </div>
           </div>
         )}
@@ -331,8 +315,8 @@ export function ListingWizard({ mode, initial, listingId }: { mode: 'create' | '
             </div>
             {pt !== 'LAND' && (
               <div>
-                <div className="mb-2 text-sm font-medium">{t('listing.facts.repair')}</div>
-                <Chips value={form.repair} onChange={(v) => set('repair', (v as WizardForm['repair']) ?? null)} options={REPAIR_TYPES.map((r) => ({ value: r as string, label: t(`enums.repair.${r}`) }))} />
+                <div className="mb-2.5 text-label text-ink-secondary">{t('listing.facts.repair')}</div>
+                <ChoicePills value={form.repair} onChange={(v) => set('repair', (v as WizardForm['repair']) ?? null)} options={REPAIR_TYPES.map((r) => ({ value: r as string, label: t(`enums.repair.${r}`) }))} />
               </div>
             )}
             <div className="flex flex-col gap-3">
@@ -340,8 +324,8 @@ export function ListingWizard({ mode, initial, listingId }: { mode: 'create' | '
               {form.dealType === 'SALE' && <Toggle checked={form.mortgageAvailable} onChange={(v) => set('mortgageAvailable', v)} label={t('wizard.mortgage')} />}
             </div>
             {daily && (
-              <div className="rounded-xl border border-brand/20 bg-brand-50/50 p-4">
-                <div className="mb-3 font-semibold">{t('wizard.dailyTitle')}</div>
+              <div className="rounded-lg bg-surface-raised p-5 shadow-pill">
+                <div className="mb-4 flex items-center gap-2 font-medium"><CalendarIcon size={18} /> {t('wizard.dailyTitle')}</div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Input label={t('listing.facts.maxGuests')} required inputMode="numeric" value={form.maxGuests} error={errors.maxGuests} onChange={(e) => set('maxGuests', e.target.value.replace(/\D/g, ''))} />
                   <Input label={t('listing.facts.minNights')} inputMode="numeric" value={form.minNights} error={errors.minNights} onChange={(e) => set('minNights', e.target.value.replace(/\D/g, ''))} />
@@ -354,8 +338,8 @@ export function ListingWizard({ mode, initial, listingId }: { mode: 'create' | '
               </div>
             )}
             <div>
-              <div className="mb-2 text-sm font-medium">{t('listing.amenities')}</div>
-              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mb-2.5 text-label text-ink-secondary">{t('listing.amenities')}</div>
+              <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
                 {AMENITIES.map((a) => (
                   <Checkbox key={a} label={t(`enums.amenity.${a}`)} checked={form.amenities.includes(a)} onChange={(on) => set('amenities', on ? [...form.amenities, a] : form.amenities.filter((x) => x !== a))} />
                 ))}
@@ -387,9 +371,9 @@ export function ListingWizard({ mode, initial, listingId }: { mode: 'create' | '
             </div>
             <div>
               <Input label={t('wizard.listingTitle')} required maxLength={120} value={form.title} error={errors.title} onChange={(e) => set('title', e.target.value)} hint={`${form.title.length}/120`} />
-              <button type="button" onClick={suggestTitle} className="mt-1 text-sm font-semibold text-brand hover:underline">
-                ✨ {t('wizard.suggestTitle')}
-              </button>
+              <Button size="sm" variant="secondary" className="mt-2" icon={<SparklesIcon size={15} />} onClick={suggestTitle}>
+                {t('wizard.suggestTitle')}
+              </Button>
             </div>
             <Textarea label={t('listing.description')} required rows={7} maxLength={5000} value={form.description} error={errors.description} onChange={(e) => set('description', e.target.value)} hint={t('wizard.descriptionHint', { n: form.description.trim().length })} />
             <div className="grid gap-4 sm:grid-cols-2">
@@ -401,22 +385,22 @@ export function ListingWizard({ mode, initial, listingId }: { mode: 'create' | '
 
         {step === 'review' && (
           <div className="flex flex-col gap-5">
-            <div className="flex gap-4">
-              <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-xl bg-surface">
+            <div className="flex gap-4 rounded-lg bg-surface-raised p-3 shadow-pill">
+              <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-md bg-surface-sunken">
                 {form.photos[0] && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={form.photos[0].thumbUrl || form.photos[0].url} alt="" className="h-full w-full object-cover" />
                 )}
               </div>
               <div className="min-w-0">
-                <div className="text-xl font-bold">{input.price ? formatPrice(input.price, form.currency) : '—'}</div>
+                <div className="font-display text-[26px] leading-tight tracking-[-0.5px]">{input.price ? <Money value={input.price} currency={form.currency} /> : '—'}</div>
                 <div className="line-clamp-2 font-medium">{form.title || '—'}</div>
-                <div className="text-sm text-muted">
+                <div className="text-label font-normal text-muted">
                   {[localized(city?.name, locale), form.districtId && localized(getDistrict(form.districtId)?.name, locale), form.address].filter(Boolean).join(', ')}
                 </div>
               </div>
             </div>
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
+            <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {(
                 [
                   [t('listing.facts.dealType'), t(`enums.dealType.${form.dealType}`)],
@@ -429,32 +413,32 @@ export function ListingWizard({ mode, initial, listingId }: { mode: 'create' | '
                   [t('listing.amenities'), String(form.amenities.length)],
                 ].filter(Boolean) as [string, string][]
               ).map(([k, v]) => (
-                <div key={k}>
-                  <dt className="text-muted">{k}</dt>
-                  <dd className="font-semibold">{v}</dd>
+                <div key={k} className="rounded-lg bg-surface-raised px-4 py-3 shadow-pill">
+                  <dt className="text-caption text-muted">{k}</dt>
+                  <dd className="mt-0.5 font-medium">{v}</dd>
                 </div>
               ))}
             </dl>
-            {Object.values(errors).some(Boolean) && <Alert tone="error">{t('wizard.fixErrors')}</Alert>}
-            <p className="text-xs text-muted">{t('wizard.moderationNote')}</p>
+            {Object.values(errors).some(Boolean) && <Notice tone="error">{t('wizard.fixErrors')}</Notice>}
+            <p className="text-caption text-muted">{t('wizard.moderationNote')}</p>
           </div>
         )}
 
-        <div className="mt-8 flex items-center justify-between gap-3 border-t border-line pt-5">
-          <Button variant="ghost" onClick={back} disabled={stepIdx === 0}>
-            ← {t('common.back')}
+        <div className="mt-8 flex items-center justify-between gap-3 border-t border-hairline pt-6">
+          <Button variant="secondary" size="lg" onClick={back} disabled={stepIdx === 0} icon={<ArrowLeftIcon size={18} />}>
+            {t('common.back')}
           </Button>
           {step === 'review' ? (
             <Button size="lg" loading={submit.isPending} disabled={uploading} onClick={() => validate() && submit.mutate()}>
               {mode === 'create' ? t('wizard.publish') : t('wizard.saveChanges')}
             </Button>
           ) : (
-            <Button size="lg" onClick={next}>
-              {t('common.next')} →
+            <Button size="lg" onClick={next} trailing={<ArrowRightIcon size={18} />}>
+              {t('common.next')}
             </Button>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

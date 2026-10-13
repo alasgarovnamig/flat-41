@@ -6,19 +6,15 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { formatPhone, startConversationSchema, type ListingDetail } from '@evtap/shared';
 import { api } from '@/lib/api';
-import { assetUrl } from '@/lib/config';
 import { issueMessage } from '@/lib/errors';
-import { initials } from '@/lib/utils';
+import { Avatar, Badge, Button, Card, Modal, Rating, Textarea } from '@/components/ds';
+import { ArrowUpRightIcon, ChatIcon, PhoneIcon, ShieldCheckIcon, VerifiedIcon } from '@/components/ds/icons';
 import { useAuthGate } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/feedback';
-import { Textarea } from '@/components/ui/form';
-import { ChatIcon, PhoneIcon, ShieldCheckIcon, StarIcon } from '@/components/ui/icons';
-import { Modal } from '@/components/ui/Modal';
 
-export function usePhoneReveal(id: string) {
-  const [phone, setPhone] = useState<string | null>(null);
+/** Reveal the phone (POST /listings/:id/phone). The owner gets `contactPhone` directly in the DTO. */
+export function usePhoneReveal(id: string, known?: string | null) {
+  const [phone, setPhone] = useState<string | null>(known ?? null);
   const m = useMutation({ mutationFn: () => api.listings.phone(id), onSuccess: (r) => setPhone(r.phone) });
   return { phone, reveal: () => m.mutate(), loading: m.isPending };
 }
@@ -46,6 +42,7 @@ export function MessageModal({ listing, open, onClose }: { listing: Pick<Listing
       open={open}
       onClose={onClose}
       title={t('listing.writeMessage')}
+      sub={listing.title}
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>
@@ -57,69 +54,67 @@ export function MessageModal({ listing, open, onClose }: { listing: Pick<Listing
         </>
       }
     >
-      <p className="mb-3 line-clamp-2 text-sm text-muted">{listing.title}</p>
-      <Textarea label={t('listing.yourMessage')} value={text} onChange={(e) => setText(e.target.value)} maxLength={2000} rows={5} error={error} />
+      <Textarea label={t('listing.yourMessage')} value={text} onChange={(e) => setText(e.target.value)} maxLength={2000} rows={5} error={error} data-autofocus />
     </Modal>
   );
 }
 
+/** Owner / agency card: avatar, name + verified, type + rating, member since; black phone pill + message pill. */
 export function ContactCard({ l }: { l: ListingDetail }) {
   const { t, href, date } = useI18n();
   const gate = useAuthGate();
-  const { phone, reveal, loading } = usePhoneReveal(l.id);
+  const { phone, reveal, loading } = usePhoneReveal(l.id, l.isOwner ? l.contactPhone : null);
   const [msg, setMsg] = useState(false);
   const agency = l.agency;
-  const avatar = assetUrl(agency?.logoUrl ?? l.owner.avatarUrl);
   const profileHref = agency ? href(`/agencies/${agency.slug}`) : href(`/users/${l.owner.id}`);
   return (
-    <div className="card p-5">
-      <Link href={profileHref} className="flex items-center gap-3">
-        {avatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatar} alt="" className="h-12 w-12 rounded-full border border-line object-cover" />
-        ) : (
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">{initials(agency?.name ?? l.contactName)}</span>
-        )}
-        <div className="min-w-0">
-          <div className="flex items-center gap-1.5 truncate font-semibold">
+    <Card aria-labelledby="contact-h">
+      <div className="flex items-start gap-3">
+        <Avatar name={agency?.name ?? l.contactName} url={agency?.logoUrl ?? l.owner.avatarUrl} size={56} square={!!agency} />
+        <div className="min-w-0 flex-1">
+          <h2 id="contact-h" className="flex items-center gap-1.5 truncate font-sans text-[16px] font-medium">
             {agency?.name ?? l.contactName}
-            {agency?.verified && <ShieldCheckIcon size={16} className="shrink-0 text-brand" />}
-          </div>
-          <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
-            {agency ? <Badge tone="brand">{t(`enums.agencyType.${agency.type}`)}</Badge> : <Badge tone="gray">{t('listing.owner')}</Badge>}
-            {l.owner.rating != null && (
-              <span className="flex items-center gap-0.5">
-                <StarIcon size={12} className="text-vip" /> {l.owner.rating.toFixed(1)} ({l.owner.reviewsCount})
-              </span>
-            )}
+            {agency?.verified && <VerifiedIcon size={17} className="shrink-0 text-success" aria-label={t('agency.verified')} />}
+          </h2>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            {agency ? <Badge tone="business">{t(`enums.agencyType.${agency.type}`)}</Badge> : <Badge tone="neutral">{t('listing.owner')}</Badge>}
+            {l.owner.rating != null && <Rating value={l.owner.rating} count={l.owner.reviewsCount} />}
           </div>
         </div>
-      </Link>
-      {agency && <div className="mt-2 text-xs text-muted">{t('listing.contactPerson')}: {l.contactName}</div>}
-      <div className="mt-1 text-xs text-muted">
-        {t('listing.memberSince', { date: date(l.owner.memberSince, { month: 'long', year: 'numeric' }) })} · {t('listing.activeListings', { n: l.owner.activeListings })}
+        <Link href={profileHref} aria-label={t('listing.openProfile')} title={t('listing.openProfile')} className="press flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-raised shadow-pill hover:bg-ink hover:text-on-ink">
+          <ArrowUpRightIcon size={18} />
+        </Link>
       </div>
-      <div className="mt-4 flex flex-col gap-2">
+      <p className="mt-4 text-caption text-muted">
+        {agency && (
+          <>
+            {t('listing.contactPerson')}: <span className="text-ink-secondary">{l.contactName}</span> ·{' '}
+          </>
+        )}
+        {t('listing.memberSince', { date: date(l.owner.memberSince, { month: 'long', year: 'numeric' }) })} · {t('listing.activeListings', { n: l.owner.activeListings })}
+      </p>
+      <div className="mt-5 flex flex-col gap-2">
         {phone ? (
-          <a href={`tel:${phone}`} className="flex h-12 items-center justify-center gap-2 rounded-xl bg-brand text-lg font-bold text-white hover:bg-brand-dark">
+          <a href={`tel:${phone}`} className="press flex h-13 items-center justify-center gap-2 rounded-pill bg-ink text-[17px] font-medium tracking-[0.2px] text-on-ink hover:bg-ink-secondary">
             <PhoneIcon size={18} /> {formatPhone(phone)}
           </a>
         ) : (
-          <Button size="lg" loading={loading} onClick={reveal} icon={<PhoneIcon size={18} />}>
-            <span className="flex flex-col items-start leading-tight">
-              <span>{l.contactPhoneMasked}</span>
-              <span className="text-[11px] font-medium opacity-80">{t('listing.showPhone')}</span>
-            </span>
+          <Button size="lg" loading={loading} onClick={reveal} icon={<PhoneIcon size={18} />} className="justify-between pl-5 pr-2">
+            <span className="tabular">{l.contactPhoneMasked}</span>
+            <span className="ml-auto rounded-pill bg-on-ink/15 px-3 py-1.5 text-label">{t('listing.showPhone')}</span>
           </Button>
         )}
         {!l.isOwner && (
-          <Button size="lg" variant="outline" icon={<ChatIcon size={18} />} onClick={() => gate(() => setMsg(true))}>
+          <Button size="lg" variant="secondary" icon={<ChatIcon size={18} />} onClick={() => gate(() => setMsg(true))}>
             {t('listing.writeMessage')}
           </Button>
         )}
       </div>
-      <p className="mt-3 text-[11px] leading-snug text-muted">{t('listing.safetyTip')}</p>
+      <p className="mt-4 flex gap-2 rounded-md bg-surface-sunken p-3 text-caption text-ink-secondary">
+        <ShieldCheckIcon size={16} className="shrink-0" />
+        {t('listing.safetyTip')}
+      </p>
       <MessageModal listing={l} open={msg} onClose={() => setMsg(false)} />
-    </div>
+    </Card>
   );
 }

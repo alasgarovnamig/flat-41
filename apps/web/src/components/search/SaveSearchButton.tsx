@@ -6,13 +6,11 @@ import { getCity, localized } from '@evtap/shared';
 import { api } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { stateToQuery, type SearchState } from '@/lib/search-state';
+import { Button, Input, Modal, Toggle } from '@/components/ds';
+import { BookmarkIcon } from '@/components/ds/icons';
 import { useAuthGate } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
 import { useToast } from '@/components/providers/ToastProvider';
-import { Button } from '@/components/ui/Button';
-import { Input, Toggle } from '@/components/ui/form';
-import { BookmarkIcon } from '@/components/ui/icons';
-import { Modal } from '@/components/ui/Modal';
 
 export function useSearchTitle() {
   const { t, locale } = useI18n();
@@ -48,9 +46,11 @@ export function SaveSearchButton({ state }: { state: SearchState }) {
   return (
     <>
       <Button
-        variant="outline"
-        size="md"
+        variant="secondary"
+        aria-label={t('search.saveSearch')}
+        title={t('search.saveSearch')}
         icon={<BookmarkIcon size={18} />}
+        className="px-3.5 xl:px-5"
         onClick={() =>
           gate(() => {
             setName(title(state));
@@ -58,7 +58,7 @@ export function SaveSearchButton({ state }: { state: SearchState }) {
           })
         }
       >
-        <span className="hidden sm:inline">{t('search.saveSearch')}</span>
+        <span className="hidden xl:inline">{t('search.saveSearch')}</span>
       </Button>
       <Modal
         open={open}
@@ -77,7 +77,7 @@ export function SaveSearchButton({ state }: { state: SearchState }) {
         }
       >
         <div className="flex flex-col gap-4">
-          <Input label={t('search.saveSearchName')} value={name} maxLength={80} onChange={(e) => setName(e.target.value)} />
+          <Input label={t('search.saveSearchName')} value={name} maxLength={80} onChange={(e) => setName(e.target.value)} data-autofocus />
           <Toggle checked={notify} onChange={setNotify} label={t('search.notifyNew')} />
         </div>
       </Modal>

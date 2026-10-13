@@ -42,7 +42,9 @@
     "notSelected": "Seçilməyib",
     "noOptions": "Heç nə tapılmadı",
     "selectedCount": "{count} seçilib",
-    "skipToContent": "Məzmuna keç"
+    "skipToContent": "Məzmuna keç",
+    "actions": "Əməliyyatlar",
+    "pagination": "Səhifələr"
   },
   "nav": {
     "main": "Əsas naviqasiya",
@@ -127,7 +129,21 @@
     "businessText": "Daha çox elan yerləşdirin, hər ay irəli çəkmə kreditləri, agentlik səhifəsi və statistika əldə edin.",
     "businessCta": "Paketləri müqayisə et",
     "appTitle": "EvTap cibinizdə",
-    "appText": "Yeni elanlar və mesajlar barədə bildiriş alın — iOS və Android tətbiqini yükləyin."
+    "appText": "Yeni elanlar və mesajlar barədə bildiriş alın — iOS və Android tətbiqini yükləyin.",
+    "heroEyebrow": "Azərbaycanda daşınmaz əmlak platforması",
+    "marketSale": "Satış elanları",
+    "marketRent": "Uzunmüddətli kirayə",
+    "marketDaily": "Günlük kirayə · {n} elan",
+    "sparkAgencies": "Agentliklərin aktiv elanları",
+    "sparkPerDay": "Son 28 gündə gündəlik yeni elanlar",
+    "sparkPerHour": "Son 24 saatda saatlıq yeni elanlar",
+    "statActive": "Aktiv elan",
+    "statActiveCaption": "Bütün şəhərlər üzrə",
+    "statAgencies": "Agentlik",
+    "statAgenciesCaption": "Agentlik və tikinti şirkətləri",
+    "statToday": "Bu gün yeni",
+    "statTodayCaption": "Son 24 saat",
+    "statsLabel": "Platforma statistikası"
   },
   "search": {
     "allListings": "Bütün elanlar",
@@ -214,7 +230,10 @@
       "checkOut": "Çıxış",
       "guests": "Qonaqlar",
       "bbox": "Xəritə sahəsi"
-    }
+    },
+    "activeFilters": "Aktiv filtrlər",
+    "allFilters": "Bütün filtrlər",
+    "listingsWord": "elan"
   },
   "badges": {
     "premium": "Premium",
@@ -277,7 +296,9 @@
       "mortgage": "İpoteka",
       "maxGuests": "Maks. qonaq",
       "minNights": "Minimum gecə"
-    }
+    },
+    "contact": "Əlaqə və bron",
+    "openProfile": "Profili aç"
   },
   "owner": {
     "title": "Sizin elanınız",
@@ -315,14 +336,17 @@
     "availabilityError": "Boş tarixləri yükləmək mümkün olmadı",
     "nightsSelected": "{n} gecə seçilib",
     "pickCheckIn": "Giriş tarixini seçin",
-    "pickCheckOut": "İndi çıxış tarixini seçin"
+    "pickCheckOut": "İndi çıxış tarixini seçin",
+    "fewerGuests": "Qonaq sayını azalt",
+    "moreGuests": "Qonaq sayını artır"
   },
   "reviews": {
     "count": "{n} rəy",
     "empty": "Hələ rəy yoxdur.",
     "loadError": "Rəyləri yükləmək mümkün olmadı",
     "hostReply": "Ev sahibinin cavabı",
-    "reply": "Cavab ver"
+    "reply": "Cavab ver",
+    "title": "Rəylər"
   },
   "mortgage": {
     "title": "İpoteka kalkulyatoru",
@@ -337,7 +361,9 @@
     "totalPaid": "Cəmi ödəniş",
     "applyTitle": "Bankdan təklif alın",
     "apply": "İpotekaya müraciət et",
-    "leadSent": "Müraciət göndərildi! Bank meneceri tezliklə sizinlə əlaqə saxlayacaq."
+    "leadSent": "Müraciət göndərildi! Bank meneceri tezliklə sizinlə əlaqə saxlayacaq.",
+    "breakdown": "Xərclərin bölgüsü",
+    "interest": "Faiz ödənişləri"
   },
   "form": {
     "name": "Ad",
@@ -466,7 +492,9 @@
     "services": "Xidmətlər",
     "summary": "Sifarişiniz",
     "nothingSelected": "Heç nə seçilməyib",
-    "pay": "{amount} ödə"
+    "pay": "{amount} ödə",
+    "choose": "Seç",
+    "selected": "Seçildi"
   },
   "result": {
     "title": "Ödənişin nəticəsi",
@@ -514,7 +542,8 @@
       "agency": "Agentlik profili",
       "members": "Agentlər",
       "agencyStats": "Agentlik statistikası",
-      "profile": "Tənzimləmələr"
+      "profile": "Tənzimləmələr",
+      "overview": "İcmal"
     }
   },
   "myListings": {
@@ -543,7 +572,11 @@
       "ARCHIVE": "Arxivə köçürüldü",
       "RENEW": "Elan yeniləndi",
       "RESTORE": "Elan bərpa edildi"
-    }
+    },
+    "archiveHint": "Elan saytdan götürüləcək. Onu sonra bərpa edə bilərsiniz.",
+    "open": "Elana bax",
+    "promotions": "Xidmətlər",
+    "soldHint": "Elan aktiv elanlardan çıxarılacaq."
   },
   "favorites": {
     "count": "{n} seçilmiş elan",
@@ -561,7 +594,10 @@
     "notifyOn": "Bildirişlər aktivdir",
     "newMatches": "{n} yeni",
     "open": "Aç",
-    "deleted": "Axtarış silindi"
+    "deleted": "Axtarış silindi",
+    "notify": "Bildiriş",
+    "rename": "Adını dəyiş",
+    "renamed": "Ad yeniləndi"
   },
   "messages": {
     "empty": "Hələ mesaj yoxdur",
@@ -572,12 +608,19 @@
     "placeholder": "Mesaj yazın…",
     "loadOlder": "Əvvəlki mesajları yüklə",
     "live": "● Real vaxt rejimi aktivdir",
-    "polling": "Bir neçə saniyədən bir yenilənir"
+    "polling": "Bir neçə saniyədən bir yenilənir",
+    "filter": "Söhbətləri axtar",
+    "online": "Mesajlar dərhal çatdırılır",
+    "pollingNote": "Mesajlar avtomatik yenilənir",
+    "read": "Oxunub",
+    "sent": "Göndərilib",
+    "typing": "yazır…"
   },
   "notifications": {
     "readAll": "Hamısını oxunmuş et",
     "empty": "Bildiriş yoxdur",
-    "loadError": "Bildirişləri yükləmək mümkün olmadı"
+    "loadError": "Bildirişləri yükləmək mümkün olmadı",
+    "unread": "Oxunmayıb"
   },
   "bookings": {
     "sub": "Səfərləriniz və qonaqlarınızın bronları.",
@@ -604,7 +647,12 @@
     "cancelReason": "Səbəb (istəyə bağlı)",
     "cancelled": "Bron ləğv edildi",
     "refundFull": "Məbləğin tamamı geri qaytarılacaq.",
-    "refundHalf": "Girişə {hours} saatdan az qalıb: qalma dəyərinin 50%-i geri qaytarılacaq."
+    "refundHalf": "Girişə {hours} saatdan az qalıb: qalma dəyərinin 50%-i geri qaytarılacaq.",
+    "dates": "Tarixlər",
+    "holdNote": "Tarixlər ödəniş üçün qısa müddət saxlanılır. Müddət bitibsə, yeni bron edin.",
+    "payNow": "Ödə",
+    "payTitle": "Bronun ödənişini tamamla",
+    "role": "Rol"
   },
   "calendar": {
     "sub": "Əmlakınızın boş olmadığı tarixləri bağlayın.",
@@ -639,7 +687,8 @@
     "sub": "Kart və balansla etdiyiniz bütün ödənişlər.",
     "loadError": "Ödənişləri yükləmək mümkün olmadı",
     "empty": "Hələ ödəniş yoxdur",
-    "check": "Statusu yoxla"
+    "check": "Statusu yoxla",
+    "details": "Ödənişə bax"
   },
   "business": {
     "title": "EvTap Biznes paketləri",
@@ -705,7 +754,8 @@
     "cancelledOk": "Avtomatik yeniləmə söndürüldü",
     "resumedOk": "Abunə bərpa edildi",
     "changePlan": "Paketi dəyiş",
-    "choosePlan": "Paket seçin"
+    "choosePlan": "Paket seçin",
+    "period": "Ödəniş dövrü"
   },
   "agency": {
     "sub": "Şirkətinizin EvTap-dakı ictimai səhifəsi.",
@@ -719,7 +769,9 @@
     "saved": "Agentlik profili yadda saxlanıldı",
     "verified": "Təsdiqlənmiş şirkət",
     "notVerified": "Hələ təsdiqlənməyib",
-    "viewPublic": "İctimai səhifəyə bax"
+    "viewPublic": "İctimai səhifəyə bax",
+    "type": "Şirkətin növü",
+    "noAgency": "Sizin hələ agentliyiniz yoxdur"
   },
   "members": {
     "sub": "Agentlər agentliyiniz adından elan yerləşdirə bilər.",
@@ -729,7 +781,10 @@
     "add": "Əlavə et",
     "added": "Agent əlavə edildi",
     "empty": "Hələ agent yoxdur",
-    "joined": "{date} qoşulub"
+    "joined": "{date} qoşulub",
+    "joinedCol": "Qoşulub",
+    "member": "Agent",
+    "role": "Rol"
   },
   "agencies": {
     "title": "Agentliklər və tikinti şirkətləri",
@@ -743,7 +798,10 @@
     "listingsN": "{n} elan",
     "since": "{date} tarixindən EvTap-da",
     "noListings": "Hələ elan yoxdur",
-    "metaDescription": "{name} şirkətinin EvTap-dakı elanları."
+    "metaDescription": "{name} şirkətinin EvTap-dakı elanları.",
+    "activeListings": "Aktiv elanlar",
+    "listingsTitle": "Elanlar",
+    "type": "Növ"
   },
   "user": {
     "title": "İstifadəçi",
@@ -762,7 +820,11 @@
     "phoneViewsN": "nömrəyə {n} baxış",
     "showTable": "Cədvəl kimi göstər",
     "showChart": "Qrafik kimi göstər",
-    "days": "{n} gün"
+    "days": "{n} gün",
+    "activeNow": "Hazırda",
+    "period": "Dövr",
+    "weekOverWeek": "həftəlik",
+    "weekly": "Həftələr üzrə baxışlar"
   },
   "profile": {
     "memberSince": "{date} tarixindən EvTap-da",
@@ -841,7 +903,54 @@
     "TOO_MANY_REQUESTS": "Çox sayda sorğu. Bir az gözləyin.",
     "PAYMENT_FAILED": "Ödəniş alınmadı",
     "FILE_TOO_LARGE": "Fayl çox böyükdür (maks. 10 MB)",
-    "UNSUPPORTED_FILE": "Yalnız JPG, PNG və WEBP şəkillərinə icazə verilir"
+    "UNSUPPORTED_FILE": "Yalnız JPG, PNG və WEBP şəkillərinə icazə verilir",
+    "RATE_LIMITED": "Çox sayda sorğu. Bir az gözləyin.",
+    "TOKEN_INVALID": "Sessiya etibarsızdır. Yenidən daxil olun.",
+    "INVALID_PASSWORD": "Cari şifrə yanlışdır",
+    "EMAIL_TAKEN": "Bu e-poçt artıq istifadə olunur",
+    "USER_NOT_FOUND": "İstifadəçi tapılmadı",
+    "FILE_REQUIRED": "Fayl seçin",
+    "UNSUPPORTED_FILE_TYPE": "Yalnız JPG, PNG və WEBP şəkillərinə icazə verilir",
+    "INVALID_IMAGE": "Şəkil oxunmadı. Başqa fayl seçin.",
+    "INVALID_IMAGES": "Bəzi şəkillər etibarsızdır. Onları yenidən yükləyin.",
+    "INVALID_LOCATION": "Ünvanı və ya xəritədəki nöqtəni yoxlayın",
+    "LISTING_BLOCKED": "Elan bloklanıb",
+    "LISTING_NOT_AVAILABLE": "Elan əlçatan deyil",
+    "LISTING_NOT_PAID": "Elan haqqı ödənilməyib",
+    "LISTING_STATUS_INVALID": "Bu statusda olan elan üçün əməliyyat mümkün deyil",
+    "INVALID_STATUS": "Status yanlışdır",
+    "INVALID_STATUS_TRANSITION": "Bu status dəyişikliyi mümkün deyil",
+    "ALREADY_VERIFIED": "Artıq yoxlanılıb",
+    "NO_AGENCY": "Sizin agentliyiniz yoxdur",
+    "ALREADY_IN_AGENCY": "Bu istifadəçi artıq agentlikdədir",
+    "ALREADY_MEMBER": "Bu istifadəçi artıq komandadadır",
+    "AGENT_LIMIT_REACHED": "Paketinizdə agent limiti bitib",
+    "CANNOT_REMOVE_OWNER": "Agentlik sahibini silmək olmaz",
+    "CANNOT_MODIFY_SELF": "Öz hesabınızı dəyişə bilməzsiniz",
+    "LIMIT_REACHED": "Limit bitib",
+    "CANNOT_MESSAGE_SELF": "Öz elanınıza mesaj yaza bilməzsiniz",
+    "MESSAGE_EMPTY": "Mesaj boşdur",
+    "RECIPIENT_UNAVAILABLE": "Alıcı əlçatan deyil",
+    "INVALID_CURSOR": "Siyahını yeniləyin",
+    "NOT_DAILY_RENT": "Bu elan günlük kirayə üçün deyil",
+    "NOT_BOOKABLE": "Bu elanı bron etmək mümkün deyil",
+    "BOOKING_NOT_CANCELLABLE": "Bu bronu artıq ləğv etmək mümkün deyil",
+    "BOOKING_ALREADY_STARTED": "Qalma artıq başlayıb",
+    "BOOKING_NOT_COMPLETED": "Yalnız başa çatmış qalmalar üçün rəy yazmaq olar",
+    "INVALID_AMOUNT": "Məbləğ yanlışdır",
+    "AMOUNT_OUT_OF_RANGE": "Məbləğ icazə verilən hədlərdən kənardadır",
+    "CURRENCY_NOT_SUPPORTED": "Bu valyuta dəstəklənmir",
+    "INVALID_SERVICE": "Xidmət tapılmadı",
+    "INVALID_PLAN": "Paket tapılmadı",
+    "NO_SUBSCRIPTION": "Aktiv abunəliyiniz yoxdur",
+    "SUBSCRIPTION_ENDED": "Abunəliyin müddəti bitib",
+    "RETURN_URL_NOT_ALLOWED": "Qayıdış ünvanına icazə verilmir",
+    "PAYMENT_PROVIDER_UNAVAILABLE": "Ödəniş sistemi müvəqqəti əlçatan deyil. Bir az sonra cəhd edin.",
+    "INVALID_SIGNATURE": "Ödəniş təsdiqlənmədi",
+    "NOT_REFUNDABLE": "Bu ödənişi geri qaytarmaq mümkün deyil",
+    "REFUND_REJECTED": "Geri qaytarma rədd edildi",
+    "REFUND_AMOUNT_INVALID": "Geri qaytarma məbləği yanlışdır",
+    "FULFILMENT_FAILED": "Ödəniş alındı, amma xidmət aktivləşmədi. Dəstək ilə əlaqə saxlayın."
   },
   "enums": {
     "dealType": {
@@ -1006,5 +1115,39 @@
       "OWNER": "Sahibi",
       "AGENT": "Agent"
     }
+  },
+  "map": {
+    "expand": "Xəritəni genişləndir",
+    "title": "Xəritə"
+  },
+  "overview": {
+    "active": "Aktiv",
+    "bonusIncluded": "Bonus daxil: {amount} ₼",
+    "colListing": "Elan",
+    "deltaHint": "Son 7 gün əvvəlki 7 günlə müqayisədə",
+    "favoritesN": "{n} dəfə seçilmişlərə əlavə edilib",
+    "hello": "Salam, {name}",
+    "last28": "Bütün elanlar üzrə",
+    "listingsState": "Elanlarım",
+    "messagesHint": "{n} oxunmamış mesajınız var",
+    "noStats": "Statistika hələ yoxdur",
+    "otherStatuses": "Digər statuslar: {n}",
+    "propertyObject": "Ən çox baxılan elanlar",
+    "quotaLeft": "Bu ay pulsuz elan qalıb: {n} / {total}",
+    "recent": "Son elanlar",
+    "sub": "Elanlarınız, baxışlar və balans bir yerdə",
+    "topListings": "Elanlara baxışlar",
+    "waiting": "Gözləyir",
+    "walletActivity": "Son 28 gündə balans əməliyyatları"
+  },
+  "settings": {
+    "title": "Tənzimləmələr"
+  },
+  "theme": {
+    "dark": "Tünd",
+    "light": "İşıqlı",
+    "sub": "Saytın görünüşü",
+    "system": "Sistem",
+    "title": "Mövzu"
   }
 }

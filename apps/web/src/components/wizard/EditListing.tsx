@@ -5,7 +5,7 @@ import { api } from '@/lib/api';
 import { errorMessage } from '@/lib/errors';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { ErrorState, PageSpinner } from '@/components/ui/feedback';
+import { ErrorState, PageSpinner } from '@/components/ds';
 import { ListingWizard } from './ListingWizard';
 import { fromListing } from './wizard-model';
 
@@ -14,12 +14,8 @@ export function EditListing({ id }: { id: string }) {
   const { user } = useAuth();
   const q = useQuery({
     queryKey: ['listings', 'edit', id],
-    queryFn: async () => {
-      const l = await api.listings.get(id);
-      // the detail DTO only has a masked phone; the owner reveals it to prefill the form
-      const phone = await api.listings.phone(id).then((r) => r.phone).catch(() => user?.phone ?? '');
-      return fromListing(l, phone);
-    },
+    // owner request → the DTO carries contactPhone and image uploadIds
+    queryFn: async () => fromListing(await api.listings.get(id), user?.phone ?? ''),
     retry: false,
     staleTime: Infinity,
   });

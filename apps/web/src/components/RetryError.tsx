@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { ErrorState } from '@/components/ds';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { ErrorState } from '@/components/ui/feedback';
 
 /** Server-rendered page could not reach the API: show a friendly error with a retry (router.refresh). */
 export function RetryError({ titleKey = 'errors.pageUnavailable' }: { titleKey?: string }) {

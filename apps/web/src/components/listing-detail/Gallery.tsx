@@ -1,18 +1,21 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { ListingImage } from '@evtap/shared';
 import { cn } from '@/lib/utils';
+import { IconButton, Img } from '@/components/ds';
+import { CameraIcon, ChevronLeft, ChevronRight, CloseIcon, ExpandIcon } from '@/components/ds/icons';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { CameraIcon, ChevronLeft, ChevronRight, CloseIcon, ExpandIcon } from '@/components/ui/icons';
-import { Img } from '@/components/ui/Img';
 
 function Lightbox({ images, index, onClose, onIndex, title }: { images: ListingImage[]; index: number; onClose: () => void; onIndex: (i: number) => void; title: string }) {
   const { t } = useI18n();
+  const ref = useRef<HTMLDivElement>(null);
   const prev = useCallback(() => onIndex((index - 1 + images.length) % images.length), [index, images.length, onIndex]);
   const next = useCallback(() => onIndex((index + 1) % images.length), [index, images.length, onIndex]);
   useEffect(() => {
+    const before = document.activeElement as HTMLElement | null;
+    ref.current?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
       if (e.key === 'ArrowLeft') prev();
@@ -24,22 +27,24 @@ function Lightbox({ images, index, onClose, onIndex, title }: { images: ListingI
     return () => {
       window.removeEventListener('keydown', onKey);
       document.body.style.overflow = o;
+      before?.focus?.();
     };
   }, [onClose, prev, next]);
   const [touchX, setTouchX] = useState<number | null>(null);
   const img = images[index]!;
   return createPortal(
-    <div role="dialog" aria-modal="true" aria-label={title} className="fixed inset-0 z-[90] flex flex-col bg-black/95 text-white">
-      <div className="flex items-center justify-between p-3">
-        <span className="text-sm text-white/70">
+    <div ref={ref} tabIndex={-1} role="dialog" aria-modal="true" aria-label={title} className="fixed inset-0 z-[90] flex flex-col bg-canvas outline-none animate-fade">
+      <div className="flex items-center justify-between gap-3 p-4">
+        <span className="glass tabular rounded-pill px-4 py-2 text-label">
           {index + 1} / {images.length}
         </span>
-        <button type="button" onClick={onClose} aria-label={t('common.close')} className="rounded-full p-2 hover:bg-white/10">
-          <CloseIcon />
-        </button>
+        <span className="hidden min-w-0 flex-1 truncate text-center text-label text-ink-secondary sm:block">{title}</span>
+        <IconButton label={t('common.close')} variant="raised" onClick={onClose}>
+          <CloseIcon size={20} />
+        </IconButton>
       </div>
       <div
-        className="relative flex-1"
+        className="relative mx-3 flex-1 overflow-hidden rounded-xl bg-surface-sunken sm:mx-6"
         onTouchStart={(e) => setTouchX(e.touches[0]!.clientX)}
         onTouchEnd={(e) => {
           if (touchX == null) return;
@@ -51,19 +56,19 @@ function Lightbox({ images, index, onClose, onIndex, title }: { images: ListingI
         <Img key={img.id} src={img.url} alt={`${title} — ${index + 1}`} fill sizes="100vw" className="object-contain" priority />
         {images.length > 1 && (
           <>
-            <button type="button" onClick={prev} aria-label={t('common.prev')} className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 hover:bg-white/20 sm:left-6">
-              <ChevronLeft />
-            </button>
-            <button type="button" onClick={next} aria-label={t('common.next')} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 hover:bg-white/20 sm:right-6">
-              <ChevronRight />
-            </button>
+            <IconButton label={t('common.prev')} variant="raised" onClick={prev} className="absolute left-3 top-1/2 -translate-y-1/2 sm:left-6">
+              <ChevronLeft size={20} />
+            </IconButton>
+            <IconButton label={t('common.next')} variant="raised" onClick={next} className="absolute right-3 top-1/2 -translate-y-1/2 sm:right-6">
+              <ChevronRight size={20} />
+            </IconButton>
           </>
         )}
       </div>
-      <div className="scrollbar-none flex gap-2 overflow-x-auto p-3">
+      <div className="scrollbar-none flex gap-2 overflow-x-auto p-4 sm:px-6">
         {images.map((im, i) => (
-          <button key={im.id} type="button" onClick={() => onIndex(i)} className={cn('relative h-14 w-20 shrink-0 overflow-hidden rounded-lg ring-2', i === index ? 'ring-white' : 'ring-transparent opacity-60 hover:opacity-100')}>
-            <Img src={im.thumbUrl || im.url} alt="" fill sizes="80px" className="object-cover" />
+          <button key={im.id} type="button" onClick={() => onIndex(i)} aria-label={`${i + 1}`} aria-current={i === index} className={cn('relative h-16 w-24 shrink-0 overflow-hidden rounded-sm ring-2 ring-offset-2 ring-offset-canvas', i === index ? 'ring-ink' : 'ring-transparent opacity-60 hover:opacity-100')}>
+            <Img src={im.thumbUrl || im.url} alt="" fill sizes="96px" className="object-cover" />
           </button>
         ))}
       </div>
@@ -72,6 +77,7 @@ function Lightbox({ images, index, onClose, onIndex, title }: { images: ListingI
   );
 }
 
+/** Large rounded photo + two stacked side photos (desktop), swipe arrows (mobile), glass "N photos" pill, thumbnails. */
 export function Gallery({ images, title, coverUrl }: { images: ListingImage[]; title: string; coverUrl: string | null }) {
   const { t } = useI18n();
   const list = images.length ? [...images].sort((a, b) => a.order - b.order) : coverUrl ? [{ id: 'cover', uploadId: null, url: coverUrl, thumbUrl: coverUrl, order: 0 }] : [];
@@ -79,44 +85,42 @@ export function Gallery({ images, title, coverUrl }: { images: ListingImage[]; t
   const [open, setOpen] = useState(false);
   if (!list.length) {
     return (
-      <div className="relative aspect-[16/10] overflow-hidden rounded-card">
+      <div className="relative aspect-[16/9] overflow-hidden rounded-xl">
         <Img src={null} alt={title} />
       </div>
     );
   }
-  const side = list.slice(1, 5);
+  const side = list.slice(1, 3);
   return (
     <>
-      <div className="relative grid gap-2 overflow-hidden rounded-card md:grid-cols-[2fr_1fr] md:grid-rows-2">
-        <button type="button" onClick={() => setOpen(true)} className="relative aspect-[16/10] overflow-hidden bg-surface md:row-span-2 md:aspect-auto md:min-h-[420px]" aria-label={t('listing.openGallery')}>
-          <Img src={list[index]!.url} alt={title} fill priority sizes="(min-width: 768px) 66vw, 100vw" className="object-cover transition-transform duration-300 hover:scale-[1.02]" />
+      <div className={cn('relative grid gap-3', side.length && 'md:grid-cols-[2fr_1fr] md:grid-rows-2')}>
+        <button type="button" onClick={() => setOpen(true)} className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-surface-sunken sm:aspect-[16/10] md:row-span-2 md:aspect-auto md:min-h-[460px]" aria-label={t('listing.openGallery')}>
+          <Img src={list[index]!.url} alt={title} fill priority sizes="(min-width: 768px) 66vw, 100vw" className="object-cover transition-transform duration-500 motion-safe:group-hover:scale-[1.02]" />
         </button>
-        {side.slice(0, 2).map((im, i) => (
-          <button key={im.id} type="button" onClick={() => { setIndex(i + 1); setOpen(true); }} className="relative hidden overflow-hidden bg-surface md:block">
-            <Img src={im.thumbUrl || im.url} alt={`${title} — ${i + 2}`} fill sizes="33vw" className="object-cover transition-transform duration-300 hover:scale-[1.03]" />
+        {side.map((im, i) => (
+          <button key={im.id} type="button" onClick={() => { setIndex(i + 1); setOpen(true); }} className="group relative hidden overflow-hidden rounded-xl bg-surface-sunken md:block" aria-label={`${t('listing.openGallery')} — ${i + 2}`}>
+            <Img src={im.thumbUrl || im.url} alt="" fill sizes="33vw" className="object-cover transition-transform duration-500 motion-safe:group-hover:scale-[1.03]" />
           </button>
         ))}
-        <div className="absolute bottom-3 right-3 flex gap-2">
-          <button type="button" onClick={() => setOpen(true)} className="flex items-center gap-1.5 rounded-lg bg-white/95 px-3 py-1.5 text-sm font-semibold shadow hover:bg-white">
-            <CameraIcon size={16} /> {list.length}
-            <ExpandIcon size={14} className="ml-1" />
-          </button>
-        </div>
+        <button type="button" onClick={() => setOpen(true)} className="glass press absolute bottom-4 right-4 inline-flex h-11 items-center gap-2 rounded-pill px-4 text-[14px] font-medium shadow-pill">
+          <CameraIcon size={18} /> {list.length}
+          <ExpandIcon size={16} />
+        </button>
         {list.length > 1 && (
           <>
-            <button type="button" onClick={() => setIndex((index - 1 + list.length) % list.length)} aria-label={t('common.prev')} className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2 shadow md:hidden">
-              <ChevronLeft size={18} />
-            </button>
-            <button type="button" onClick={() => setIndex((index + 1) % list.length)} aria-label={t('common.next')} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2 shadow md:hidden">
-              <ChevronRight size={18} />
-            </button>
+            <IconButton label={t('common.prev')} variant="raised" onClick={() => setIndex((index - 1 + list.length) % list.length)} className="absolute left-3 top-1/2 -translate-y-1/2 md:hidden">
+              <ChevronLeft size={20} />
+            </IconButton>
+            <IconButton label={t('common.next')} variant="raised" onClick={() => setIndex((index + 1) % list.length)} className="absolute right-3 top-1/2 -translate-y-1/2 md:hidden">
+              <ChevronRight size={20} />
+            </IconButton>
           </>
         )}
       </div>
       {list.length > 1 && (
-        <div className="scrollbar-none mt-2 flex gap-2 overflow-x-auto">
+        <div className="scrollbar-none mt-3 flex gap-2 overflow-x-auto p-1">
           {list.map((im, i) => (
-            <button key={im.id} type="button" onClick={() => setIndex(i)} className={cn('relative h-16 w-24 shrink-0 overflow-hidden rounded-lg ring-2 transition', i === index ? 'ring-brand' : 'ring-transparent opacity-80 hover:opacity-100')} aria-label={`${i + 1}`}>
+            <button key={im.id} type="button" onClick={() => setIndex(i)} className={cn('relative h-16 w-24 shrink-0 overflow-hidden rounded-sm ring-2 ring-offset-2 ring-offset-frame transition', i === index ? 'ring-ink' : 'ring-transparent opacity-75 hover:opacity-100')} aria-label={`${i + 1}`} aria-current={i === index}>
               <Img src={im.thumbUrl || im.url} alt="" fill sizes="96px" className="object-cover" />
             </button>
           ))}
