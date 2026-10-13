@@ -1,0 +1,104 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --color-brand: #0e7c66;
+  --color-brand-dark: #0a5c4c;
+  --color-brand-50: #e9f5f2;
+  --color-brand-100: #cfeae3;
+  --color-vip: #f5a524;
+  --color-vip-50: #fef6e7;
+  --color-premium: #7c3aed;
+  --color-premium-50: #f3edfe;
+  --color-urgent: #e5484d;
+  --color-urgent-50: #fdeced;
+  --color-highlight: #fff8e6;
+  --color-ink: #111827;
+  --color-muted: #6b7280;
+  --color-surface: #f7f7f8;
+  --color-line: #e5e7eb;
+
+  --radius-card: 12px;
+  --shadow-card: 0 1px 2px rgb(17 24 39 / 0.04), 0 2px 8px rgb(17 24 39 / 0.04);
+  --shadow-card-hover: 0 4px 12px rgb(17 24 39 / 0.08), 0 12px 32px rgb(17 24 39 / 0.08);
+
+  --animate-in: fade-in-up 0.2s ease-out;
+  @keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-surface text-ink antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@utility container-page {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  @media (width >= 40rem) {
+    padding-inline: 1.5rem;
+  }
+}
+
+@utility card {
+  background: white;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-line);
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility skeleton {
+  background: linear-gradient(90deg, #eef0f2 25%, #f6f7f8 37%, #eef0f2 63%);
+  background-size: 400% 100%;
+  animation: skeleton 1.4s ease infinite;
+}
+
+@keyframes skeleton {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+/* Leaflet price markers */
+.price-marker {
+  background: white;
+  color: var(--color-ink);
+  border: 1px solid var(--color-line);
+  border-radius: 9999px;
+  padding: 2px 8px;
+  font: 600 12px/18px var(--font-sans);
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.18);
+  transform: translate(-50%, -50%);
+  display: inline-block;
+}
+.price-marker.vip { background: var(--color-vip); border-color: var(--color-vip); color: #111827; }
+.price-marker.premium { background: var(--color-premium); border-color: var(--color-premium); color: white; }
+.price-marker:hover { background: var(--color-brand); color: white; border-color: var(--color-brand); z-index: 1000; }
+.leaflet-container { font-family: var(--font-sans); }
+.leaflet-div-icon.price-icon { background: transparent; border: 0; }
