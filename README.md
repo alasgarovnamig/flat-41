@@ -122,3 +122,5 @@ Ayrıntılar `apps/mobile/README.md`'de. Özet: `eas build` ile development/prev
 - Cron işleri tek sunucu için; yatay ölçeklemede dağıtık kilit (advisory lock) gerekir
 - Gerçek ikon / splash / marka görselleri, mağaza metinleri
 - Admin'de bazı uç noktalar sunucu tarafı sıralama desteklemiyor (sayfa içi sıralama)
+
+
