@@ -1,0 +1,15 @@
+{
+  "name": "@evtap/api-go",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EvTap REST + WebSocket API in Go (chi, pgx, goose)",
+  "scripts": {
+    "dev": "go run ./cmd/api",
+    "build": "go build -o bin/api ./cmd/api && go build -o bin/migrate ./cmd/migrate && go build -o bin/seed ./cmd/seed",
+    "start": "./bin/api",
+    "db:migrate": "go run ./cmd/migrate",
+    "db:seed": "go run ./cmd/seed",
+    "typecheck": "go vet ./...",
+    "test": "go test ./..."
+  }
+}
