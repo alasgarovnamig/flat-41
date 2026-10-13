@@ -78,7 +78,7 @@ export interface Agency extends AgencySummary {
 export interface AgencyMember { userId: string; name: string; phone: string | null; email: string | null; avatarUrl: string | null; role: AgencyMemberRole; activeListings: number; joinedAt: string }
 
 // ───────────────────────────── Listings ─────────────────────────────
-export interface ListingImage { id: string; url: string; thumbUrl: string; order: number }
+export interface ListingImage { id: string; uploadId: string | null; url: string; thumbUrl: string; order: number } // send uploadId back in imageIds when editing
 export interface Upload { id: string; url: string; thumbUrl: string; mime: string; size: number }
 
 /** Compact representation for result lists, cards, carousels. */
@@ -137,6 +137,7 @@ export interface ListingDetail extends ListingCard {
   // contact (phone is masked: "+994 50 123 ** **"; reveal via POST /listings/:id/phone)
   contactName: string;
   contactPhoneMasked: string;
+  contactPhone: string | null; // full number — only for the owner / admins (others: null, use POST /listings/:id/phone)
   owner: PublicUser;
   agency: AgencySummary | null;
   views: number;
@@ -165,7 +166,7 @@ export interface ActivePromotion { id: string; type: PromotionType; serviceCode:
 
 export interface ListingStats { views: number; phoneViews: number; favorites: number; messages: number; daily: { date: string; views: number; phoneViews: number }[] }
 
-export interface MapPoint { id: string; lat: number; lng: number; price: number; currency: Currency; pricePeriod: PricePeriod; isVip: boolean; isPremium: boolean }
+export interface MapPoint { id: string; lat: number; lng: number; price: number; currency: Currency; pricePeriod: PricePeriod; isVip: boolean; isPremium: boolean; title: string; coverUrl: string | null }
 
 export interface Availability { listingId: string; blockedDates: string[]; bookedRanges: { checkIn: string; checkOut: string }[] }
 

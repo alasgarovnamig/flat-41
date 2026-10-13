@@ -166,7 +166,7 @@ for (const [status, count] of STATUS_PLAN) {
     const created = status === 'PENDING' ? ago(int(10, 60 * 30) * 60_000) : daysAgo(int(1, 80));
     const kind = n++;
     const imgCount = int(3, 8);
-    const images = Array.from({ length: imgCount }, (_, k) => ({ id: uuid(), url: photo(kind, k), thumbUrl: photo(kind, k), order: k }));
+    const images = Array.from({ length: imgCount }, (_, k) => ({ id: uuid(), uploadId: null, url: photo(kind, k), thumbUrl: photo(kind, k), order: k }));
     const area = tpl.prop === 'LAND' ? 600 : int(38, 260);
     const l: MockListing = {
       id: uuid(),

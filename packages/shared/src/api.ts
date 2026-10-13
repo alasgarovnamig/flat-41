@@ -32,7 +32,8 @@ export const ENDPOINTS = {
   'POST /mortgage/leads': '[public, auth optional] body MortgageLeadInput → { id }',
   'GET /banners': '[public] query { placement } → Banner[] (active only; counts an impression)',
   'POST /banners/:id/click': '[public] → { ok: true }',
-  'GET /pages/:slug': '[public] → CmsPage',
+  'GET /pages': '[public] → { slug, title }[] (title localised by ?locale=az|ru|en)',
+  'GET /pages/:slug': '[public] → CmsPage (body is Markdown)',
 
   // ── Uploads ────────────────────────────────────────────────────────────
   'POST /uploads': '[auth] multipart field "file" (jpeg/png/webp ≤ 10MB) → Upload (resized to max 1600px + 400px thumb, webp)',
@@ -63,12 +64,14 @@ export const ENDPOINTS = {
   'DELETE /favorites/:listingId': '[auth] → { ok: true }',
   'GET /saved-searches': '[auth] → SavedSearch[]',
   'POST /saved-searches': '[auth] body SavedSearchInput → SavedSearch',
+  'PATCH /saved-searches/:id': '[auth] body { name?, notify? } → SavedSearch',
   'DELETE /saved-searches/:id': '[auth] → { ok: true }',
 
-  // ── Messaging (also realtime over socket.io, see REALTIME) ─────────────
+  // ── Messaging (also realtime over WebSocket, see REALTIME) ─────────────
   'GET /conversations': '[auth] query pagination → Paginated<Conversation>',
   'POST /conversations': '[auth] body { listingId, message } → Conversation (re-uses existing conversation for same listing+buyer)',
   'GET /conversations/unread-count': '[auth] → { count }',
+  'GET /conversations/:id': '[participant] → Conversation',
   'GET /conversations/:id/messages': '[auth] query { before?: messageId, limit?=50 } → Message[] (newest last)',
   'POST /conversations/:id/messages': '[auth] body { body } → Message',
   'POST /conversations/:id/read': '[auth] → { ok: true }',
@@ -78,6 +81,7 @@ export const ENDPOINTS = {
   'POST /bookings': '[auth] body CreateBookingInput → { booking: Booking, checkout: CheckoutResponse } (dates are held 30 min while PENDING_PAYMENT)',
   'GET /bookings': '[auth] query { role: guest|host, status?, page, pageSize } → Paginated<Booking>',
   'GET /bookings/:id': '[guest|host] → Booking',
+  'POST /bookings/:id/pay': '[guest] body { method: CARD|WALLET, returnUrl? } → CheckoutResponse (resume payment of a PENDING_PAYMENT booking whose hold has not expired)',
   'POST /bookings/:id/cancel': '[guest|host] body { reason? } → Booking (refund per policy: guest ≥ freeCancellationHours → 100%, else 50% of subtotal; host cancel → 100%)',
   'POST /bookings/:id/review': '[guest] body { rating, comment } → Review (only COMPLETED, once)',
   'POST /reviews/:id/reply': '[host] body { reply } → Review',
@@ -156,7 +160,31 @@ export const ENDPOINTS = {
 
 export type EndpointKey = keyof typeof ENDPOINTS;
 
-/** Realtime: socket.io at `${API_URL}` path `/ws`, auth: `{ token: accessToken }` in handshake. */
+/** Stable machine-readable error codes (ApiError.code). Clients translate these; unknown codes fall back to HTTP status. */
+export const ERROR_CODES = [
+  'VALIDATION_ERROR', 'UNAUTHORIZED', 'FORBIDDEN', 'NOT_FOUND', 'CONFLICT', 'RATE_LIMITED', 'INTERNAL',
+  'TOKEN_INVALID', 'REFRESH_INVALID', 'REFRESH_REUSED', 'INVALID_CREDENTIALS', 'INVALID_PASSWORD', 'USER_EXISTS', 'EMAIL_TAKEN',
+  'USER_BLOCKED', 'USER_NOT_FOUND', 'OTP_INVALID', 'OTP_EXPIRED', 'OTP_TOO_FREQUENT', 'OTP_TOO_MANY_ATTEMPTS',
+  'FILE_REQUIRED', 'FILE_TOO_LARGE', 'UNSUPPORTED_FILE_TYPE', 'INVALID_IMAGE', 'INVALID_IMAGES', 'INVALID_LOCATION',
+  'LISTING_BLOCKED', 'LISTING_NOT_ACTIVE', 'LISTING_NOT_AVAILABLE', 'LISTING_NOT_PAID', 'LISTING_STATUS_INVALID',
+  'INVALID_STATUS', 'INVALID_STATUS_TRANSITION', 'ALREADY_VERIFIED',
+  'NO_AGENCY', 'ALREADY_IN_AGENCY', 'ALREADY_MEMBER', 'AGENT_LIMIT_REACHED', 'CANNOT_REMOVE_OWNER', 'CANNOT_MODIFY_SELF', 'LIMIT_REACHED',
+  'CANNOT_MESSAGE_SELF', 'MESSAGE_EMPTY', 'RECIPIENT_UNAVAILABLE', 'INVALID_CURSOR',
+  'NOT_DAILY_RENT', 'NOT_BOOKABLE', 'BOOKING_NOT_CANCELLABLE', 'BOOKING_ALREADY_STARTED', 'BOOKING_NOT_COMPLETED', 'ALREADY_REVIEWED',
+  'INSUFFICIENT_FUNDS', 'INVALID_AMOUNT', 'AMOUNT_OUT_OF_RANGE', 'CURRENCY_NOT_SUPPORTED', 'INVALID_SERVICE', 'INVALID_PLAN',
+  'NO_SUBSCRIPTION', 'NO_CREDITS', 'SUBSCRIPTION_ENDED', 'RETURN_URL_NOT_ALLOWED', 'PAYMENT_PROVIDER_UNAVAILABLE',
+  'INVALID_SIGNATURE', 'NOT_REFUNDABLE', 'REFUND_REJECTED', 'REFUND_AMOUNT_INVALID', 'FULFILMENT_FAILED',
+] as const;
+export type ErrorCode = (typeof ERROR_CODES)[number];
+
+/**
+ * Realtime: plain **WebSocket** (RFC 6455) at `ws(s)://<API host>/ws?token=<accessToken>` — no socket.io, so native
+ * iOS (URLSessionWebSocketTask) and Android (OkHttp WebSocket) clients need no extra library.
+ * Every frame is UTF-8 JSON: `{ "event": "<name>", "data": <payload> }`.
+ *  - Auth: invalid/missing token → the server closes with code 4401 ("UNAUTHORIZED").
+ *  - Heartbeat: server sends `{"event":"ping"}` every 25 s, client answers `{"event":"pong"}`; idle > 60 s → closed.
+ *  - Clients reconnect with exponential back-off (1 s → 30 s) and refresh the access token first when it expired.
+ */
 export const REALTIME = {
   path: '/ws',
   serverEvents: {
@@ -165,11 +193,15 @@ export const REALTIME = {
     'notification:new': 'AppNotification',
     'payment:updated': 'Payment',
     'typing': '{ conversationId, userId } (relayed from the other participant; throttled to ~1/s)',
+    'ping': 'null — heartbeat, reply with pong',
   },
   clientEvents: {
     'typing': '{ conversationId }',
+    'pong': 'null',
   },
 } as const;
+
+export interface RealtimeFrame<T = unknown> { event: string; data?: T }
 
 /** Client-side redirect targets after bank payment. Clients pass `returnUrl` to /checkout. */
 export const PAYMENT_RETURN = {

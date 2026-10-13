@@ -1,0 +1,8 @@
+{
+  "name": "@evtap/design-tokens",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Single source of design tokens for web, admin, iOS (SwiftUI) and Android (Compose)",
+  "exports": { "./tokens.css": "./dist/tokens.css", "./tokens": "./dist/tokens.ts", "./tokens.json": "./tokens.json" },
+  "scripts": { "build": "node scripts/build.mjs", "typecheck": "node scripts/build.mjs" }
+}

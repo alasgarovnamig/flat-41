@@ -95,7 +95,7 @@ export const toAdminListing = (row: AdminCardRow): AdminListing => ({
   updatedAt: iso(row.updatedAt)!,
 });
 
-export const toImage = (r: typeof listingImages.$inferSelect): ListingImage => ({ id: r.id, url: r.url, thumbUrl: r.thumbUrl, order: r.order });
+export const toImage = (r: typeof listingImages.$inferSelect): ListingImage => ({ id: r.id, uploadId: r.uploadId, url: r.url, thumbUrl: r.thumbUrl, order: r.order });
 
 export const toPromotion = (p: typeof listingPromotions.$inferSelect): ActivePromotion => ({
   id: p.id,
@@ -116,5 +116,7 @@ export const toMapPoint = (row: ListingRow): MapPoint => {
     pricePeriod: row.pricePeriod as MapPoint['pricePeriod'],
     isVip: active(row.vipUntil, now),
     isPremium: active(row.premiumUntil, now),
+    title: row.title,
+    coverUrl: (row as { coverUrl?: string | null }).coverUrl ?? null,
   };
 };

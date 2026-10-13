@@ -74,7 +74,7 @@ function Lightbox({ images, index, onClose, onIndex, title }: { images: ListingI
 
 export function Gallery({ images, title, coverUrl }: { images: ListingImage[]; title: string; coverUrl: string | null }) {
   const { t } = useI18n();
-  const list = images.length ? [...images].sort((a, b) => a.order - b.order) : coverUrl ? [{ id: 'cover', url: coverUrl, thumbUrl: coverUrl, order: 0 }] : [];
+  const list = images.length ? [...images].sort((a, b) => a.order - b.order) : coverUrl ? [{ id: 'cover', uploadId: null, url: coverUrl, thumbUrl: coverUrl, order: 0 }] : [];
   const [index, setIndex] = useState(0);
   const [open, setOpen] = useState(false);
   if (!list.length) {

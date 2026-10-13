@@ -138,6 +138,7 @@ export class ListingsService {
       houseRules: row.houseRules,
       contactName: row.contactName,
       contactPhoneMasked: maskPhone(row.contactPhone),
+      contactPhone: privileged ? row.contactPhone : null,
       owner,
       agency: await this.agencySummary(row.agencyId, owner.agency),
       views: row.views,

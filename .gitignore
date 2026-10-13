@@ -17,3 +17,6 @@ apps/mobile/android/
 .DS_Store
 *.tsbuildinfo
 .claude/
+
+# design tokens: generated files are committed (native apps consume them without node)
+!packages/design-tokens/dist/
