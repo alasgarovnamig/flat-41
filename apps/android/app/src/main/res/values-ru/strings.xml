@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_channel_name">Уведомления</string>
+
+    <string name="home_headline">Найди свой дом.</string>
+    <string name="home_stat_sale">Продажа</string>
+    <string name="home_stat_rent">Аренда</string>
+    <string name="home_stat_daily">Посуточно · %1$s</string>
+    <string name="search_country">Страна</string>
+    <string name="map_unavailable">Карта недоступна (не задан ключ Google Maps)</string>
+    <string name="listing_open_in_maps">Открыть на карте</string>
+    <string name="pages_all">Все страницы</string>
+
+    <string name="post_move_left">Переместить влево</string>
+    <string name="post_move_right">Переместить вправо</string>
+
+    <string name="chat_read">Прочитано</string>
+    <string name="chat_quick_available">Объявление ещё актуально?</string>
+    <string name="chat_quick_viewing">Можно посмотреть?</string>
+    <string name="chat_quick_price">Возможен торг?</string>
+
+    <string name="agency_members">Сотрудники</string>
+    <string name="agency_add_member">Добавить сотрудника</string>
+
+    <string name="settings_push_unavailable">В этой сборке push-уведомления не подключены</string>
+    <string name="settings_change_password">Сменить пароль</string>
+    <string name="settings_current_password">Текущий пароль</string>
+    <string name="settings_new_password">Новый пароль</string>
+    <string name="settings_licenses">Лицензии открытого ПО</string>
+    <string name="settings_avatar_hint">Фото профиля показывается рядом с именем и отзывами</string>
+
+    <string name="errors_email_taken">Этот e-mail уже используется</string>
+    <string name="errors_listing_not_available">Объявление недоступно</string>
+    <string name="errors_not_bookable">Это объявление нельзя забронировать онлайн</string>
+    <string name="errors_own_listing">Нельзя забронировать собственное объявление</string>
+    <string name="errors_past_date">Дата заезда уже прошла</string>
+    <string name="errors_too_long">Слишком долгий срок (макс. 365 ночей)</string>
+    <string name="errors_min_nights">Срок меньше минимального количества ночей</string>
+    <string name="errors_max_guests">Слишком много гостей для этого объявления</string>
+    <string name="errors_booking_not_cancellable">Эту бронь нельзя отменить</string>
+    <string name="errors_booking_already_started">Поездка уже началась</string>
+    <string name="errors_already_reviewed">Отзыв уже оставлен</string>
+    <string name="errors_no_credits">Кредиты подписки закончились</string>
+    <string name="errors_agent_limit_reached">Достигнут лимит сотрудников тарифа</string>
+    <string name="errors_already_in_agency">Пользователь уже в агентстве</string>
+    <string name="errors_file_too_large">Файл слишком большой (макс. 10 МБ)</string>
+    <string name="errors_invalid_image">Формат изображения не поддерживается</string>
+    <string name="errors_amount_out_of_range">Сумма вне допустимого диапазона</string>
+    <string name="errors_cannot_message_self">Нельзя написать на своё объявление</string>
+    <string name="errors_payment_provider_unavailable">Банк сейчас недоступен. Повторите попытку позже</string>
+
+    <string name="validation_required">Обязательное поле</string>
+    <string name="validation_min_length">Минимум %1$s символов</string>
+    <string name="validation_max_length">Максимум %1$s символов</string>
+    <string name="validation_range">Должно быть от %1$s до %2$s</string>
+    <string name="validation_number">Введите число</string>
+    <string name="validation_phone">Неверный номер</string>
+    <string name="validation_email">Неверный e-mail</string>
+    <string name="validation_time">Время в формате ЧЧ:ММ</string>
+    <string name="validation_url">Адрес должен начинаться с https://</string>
+    <string name="validation_floor">Этаж не может быть больше этажности дома</string>
+    <string name="validation_photos">Добавьте хотя бы одно фото</string>
+    <string name="validation_too_many_photos">Не больше %1$s фото</string>
+</resources>

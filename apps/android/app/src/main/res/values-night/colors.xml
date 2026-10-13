@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="evtap_canvas">#FF0C0C0E</color>
+    <color name="evtap_ink">#FFF5F5F7</color>
+    <color name="evtap_on_ink">#FF0B0B0C</color>
+</resources>

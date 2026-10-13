@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strings added for the native app (az = default locale). Ported strings live in strings_ported.xml. -->
+<resources>
+    <string name="app_name" translatable="false">EvTap</string>
+    <string name="notification_channel_general" translatable="false">evtap_general</string>
+    <string name="notification_channel_name">Bildirişlər</string>
+
+    <string name="home_headline">Evini tap.</string>
+    <string name="home_stat_sale">Satış elanları</string>
+    <string name="home_stat_rent">Kirayə elanları</string>
+    <!-- args: n -->
+    <string name="home_stat_daily">Günlük · %1$s</string>
+    <string name="search_country">Ölkə</string>
+    <string name="map_unavailable">Xəritə əlçatan deyil (Google Maps açarı təyin edilməyib)</string>
+    <string name="listing_open_in_maps">Xəritədə aç</string>
+    <string name="pages_all">Bütün səhifələr</string>
+
+    <string name="post_move_left">Sola köçür</string>
+    <string name="post_move_right">Sağa köçür</string>
+
+    <string name="chat_read">Oxunub</string>
+    <string name="chat_quick_available">Elan hələ aktualdırmı?</string>
+    <string name="chat_quick_viewing">Baxmaq mümkündürmü?</string>
+    <string name="chat_quick_price">Qiymətdə endirim var?</string>
+
+    <string name="agency_members">Əməkdaşlar</string>
+    <string name="agency_add_member">Əməkdaş əlavə et</string>
+
+    <string name="settings_push_unavailable">Bu quruluşda push bildirişlər qoşulmayıb</string>
+    <string name="settings_change_password">Şifrəni dəyiş</string>
+    <string name="settings_current_password">Cari şifrə</string>
+    <string name="settings_new_password">Yeni şifrə</string>
+    <string name="settings_licenses">Açıq mənbə lisenziyaları</string>
+    <string name="settings_avatar_hint">Profil şəkli yalnız ad və rəylərin yanında göstərilir</string>
+
+    <string name="errors_email_taken">Bu e-poçt artıq istifadə olunur</string>
+    <string name="errors_listing_not_available">Elan mövcud deyil</string>
+    <string name="errors_not_bookable">Bu elan onlayn bron üçün deyil</string>
+    <string name="errors_own_listing">Öz elanınızı bron edə bilməzsiniz</string>
+    <string name="errors_past_date">Giriş tarixi keçmişdədir</string>
+    <string name="errors_too_long">Bron müddəti çox uzundur (maks. 365 gecə)</string>
+    <string name="errors_min_nights">Qalma müddəti minimum gecə sayından azdır</string>
+    <string name="errors_max_guests">Bu elan üçün qonaq sayı çoxdur</string>
+    <string name="errors_booking_not_cancellable">Bu bronu ləğv etmək mümkün deyil</string>
+    <string name="errors_booking_already_started">Səfər artıq başlayıb</string>
+    <string name="errors_already_reviewed">Rəy artıq yazılıb</string>
+    <string name="errors_no_credits">Abunəlik kreditləri bitib</string>
+    <string name="errors_agent_limit_reached">Paketinizdə əməkdaş limiti dolub</string>
+    <string name="errors_already_in_agency">İstifadəçi artıq agentlikdədir</string>
+    <string name="errors_file_too_large">Fayl çox böyükdür (maks. 10 MB)</string>
+    <string name="errors_invalid_image">Şəkil formatı dəstəklənmir</string>
+    <string name="errors_amount_out_of_range">Məbləğ icazə verilən hədddən kənardır</string>
+    <string name="errors_cannot_message_self">Öz elanınıza yaza bilməzsiniz</string>
+    <string name="errors_payment_provider_unavailable">Bank hazırda əlçatan deyil. Bir az sonra yenidən cəhd edin</string>
+
+    <string name="validation_required">Bu sahə vacibdir</string>
+    <!-- args: min -->
+    <string name="validation_min_length">Ən azı %1$s simvol</string>
+    <!-- args: max -->
+    <string name="validation_max_length">Ən çox %1$s simvol</string>
+    <!-- args: min, max -->
+    <string name="validation_range">%1$s ilə %2$s arasında olmalıdır</string>
+    <string name="validation_number">Rəqəm daxil edin</string>
+    <string name="validation_phone">Nömrə düzgün deyil</string>
+    <string name="validation_email">E-poçt düzgün deyil</string>
+    <string name="validation_time">Vaxt SS:DD formatında olmalıdır</string>
+    <string name="validation_url">Ünvan https:// ilə başlamalıdır</string>
+    <string name="validation_floor">Mərtəbə binanın mərtəbə sayından çox ola bilməz</string>
+    <string name="validation_photos">Ən azı bir şəkil əlavə edin</string>
+    <!-- args: max -->
+    <string name="validation_too_many_photos">Ən çox %1$s şəkil</string>
+</resources>

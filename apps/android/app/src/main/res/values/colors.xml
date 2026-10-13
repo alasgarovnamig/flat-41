@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Window-level colours only (splash, system bars before Compose draws). Compose uses EvTapTokens.kt. -->
+<resources>
+    <color name="evtap_canvas">#FFE9E9EB</color>
+    <color name="evtap_ink">#FF0B0B0C</color>
+    <color name="evtap_on_ink">#FFFFFFFF</color>
+    <color name="ic_launcher_background">#FF0B0B0C</color>
+</resources>

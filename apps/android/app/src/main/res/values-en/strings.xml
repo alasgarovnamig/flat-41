@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_channel_name">Notifications</string>
+
+    <string name="home_headline">Find your home.</string>
+    <string name="home_stat_sale">For sale</string>
+    <string name="home_stat_rent">For rent</string>
+    <string name="home_stat_daily">Daily · %1$s</string>
+    <string name="search_country">Country</string>
+    <string name="map_unavailable">Map unavailable (no Google Maps key configured)</string>
+    <string name="listing_open_in_maps">Open in Maps</string>
+    <string name="pages_all">All pages</string>
+
+    <string name="post_move_left">Move left</string>
+    <string name="post_move_right">Move right</string>
+
+    <string name="chat_read">Read</string>
+    <string name="chat_quick_available">Is it still available?</string>
+    <string name="chat_quick_viewing">Can I come for a viewing?</string>
+    <string name="chat_quick_price">Is the price negotiable?</string>
+
+    <string name="agency_members">Team</string>
+    <string name="agency_add_member">Add team member</string>
+
+    <string name="settings_push_unavailable">Push notifications are not configured in this build</string>
+    <string name="settings_change_password">Change password</string>
+    <string name="settings_current_password">Current password</string>
+    <string name="settings_new_password">New password</string>
+    <string name="settings_licenses">Open-source licences</string>
+    <string name="settings_avatar_hint">Your photo is shown next to your name and reviews</string>
+
+    <string name="errors_email_taken">This e-mail is already in use</string>
+    <string name="errors_listing_not_available">The listing is not available</string>
+    <string name="errors_not_bookable">This listing cannot be booked online</string>
+    <string name="errors_own_listing">You cannot book your own listing</string>
+    <string name="errors_past_date">Check-in date is in the past</string>
+    <string name="errors_too_long">Stay is too long (max. 365 nights)</string>
+    <string name="errors_min_nights">Stay is shorter than the minimum number of nights</string>
+    <string name="errors_max_guests">Too many guests for this listing</string>
+    <string name="errors_booking_not_cancellable">This booking can no longer be cancelled</string>
+    <string name="errors_booking_already_started">The stay has already started</string>
+    <string name="errors_already_reviewed">You already left a review</string>
+    <string name="errors_no_credits">No subscription credits left</string>
+    <string name="errors_agent_limit_reached">Your plan\'s team limit is reached</string>
+    <string name="errors_already_in_agency">This user already belongs to an agency</string>
+    <string name="errors_file_too_large">File is too large (max 10 MB)</string>
+    <string name="errors_invalid_image">Unsupported image format</string>
+    <string name="errors_amount_out_of_range">Amount is out of the allowed range</string>
+    <string name="errors_cannot_message_self">You cannot message your own listing</string>
+    <string name="errors_payment_provider_unavailable">The bank is unavailable right now. Try again later</string>
+
+    <string name="validation_required">Required</string>
+    <string name="validation_min_length">At least %1$s characters</string>
+    <string name="validation_max_length">At most %1$s characters</string>
+    <string name="validation_range">Must be between %1$s and %2$s</string>
+    <string name="validation_number">Enter a number</string>
+    <string name="validation_phone">Invalid phone number</string>
+    <string name="validation_email">Invalid e-mail</string>
+    <string name="validation_time">Use HH:MM</string>
+    <string name="validation_url">Must start with https://</string>
+    <string name="validation_floor">Floor cannot exceed the number of floors</string>
+    <string name="validation_photos">Add at least one photo</string>
+    <string name="validation_too_many_photos">At most %1$s photos</string>
+</resources>
