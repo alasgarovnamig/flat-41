@@ -1,63 +1,93 @@
 'use client';
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
 import { useState } from 'react';
-import { formatMoney, type PaymentStatus } from '@evtap/shared';
+import type { Payment } from '@evtap/shared';
 import { api } from '@/lib/api';
 import { errorMessage } from '@/lib/errors';
 import { qk } from '@/lib/query-keys';
-import { PageHeader } from '@/components/account/PageHeader';
+import { paymentStatusTone } from '@/lib/status';
+import { DataTable, EmptyState, ErrorState, IconLink, Money, PageHeader, Pagination, RowCard, StatusPill, type Column } from '@/components/ds';
+import { ArrowUpRightIcon, CardIcon, ReceiptIcon, WalletIcon } from '@/components/ds/icons';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { Badge, EmptyState, ErrorState, Skeleton } from '@/components/ui/feedback';
-import { CardIcon } from '@/components/ui/icons';
-import { Pagination } from '@/components/ui/Pagination';
-
-const TONE: Record<PaymentStatus, 'green' | 'gray' | 'urgent' | 'vip' | 'blue'> = {
-  CREATED: 'gray', PENDING: 'vip', SUCCEEDED: 'green', FAILED: 'urgent', CANCELLED: 'gray', REFUNDED: 'blue', PARTIALLY_REFUNDED: 'blue',
-};
 
 export default function PaymentsPage() {
   const { t, href, dateTime } = useI18n();
   const [page, setPage] = useState(1);
   const q = useQuery({ queryKey: qk.payments(page), queryFn: () => api.payments.list({ page, pageSize: 15 }), placeholderData: keepPreviousData });
+  const method = (p: Payment) => (p.method === 'WALLET' ? t('payment.wallet') : `${t('payment.card')}${p.cardMask ? ` ${p.cardMask}` : ''}`);
+  const columns: Column<Payment>[] = [
+    {
+      key: 'desc',
+      header: t('result.description'),
+      cell: (p) => (
+        <span className="flex min-w-0 items-center gap-3">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm bg-surface-sunken">{p.method === 'WALLET' ? <WalletIcon size={20} /> : <CardIcon size={20} />}</span>
+          <span className="min-w-0">
+            <span className="block max-w-[20rem] truncate font-medium">{p.description || t(`enums.paymentPurpose.${p.purpose}`)}</span>
+            <span className="block truncate text-caption text-muted">{t(`enums.paymentPurpose.${p.purpose}`)}</span>
+            {p.failureReason && <span className="block truncate text-caption text-danger">{p.failureReason}</span>}
+          </span>
+        </span>
+      ),
+    },
+    { key: 'method', header: t('payment.method'), cell: method, minWidth: 'lg' },
+    { key: 'date', header: t('common.date'), cell: (p) => <span className="whitespace-nowrap text-ink-secondary">{dateTime(p.createdAt)}</span>, minWidth: 'md' },
+    {
+      key: 'amount',
+      header: t('common.amount'),
+      align: 'right',
+      cell: (p) => (
+        <span className="flex flex-col items-end">
+          <Money value={p.amount} currency={p.currency} minor className="font-medium" />
+          {p.refundedAmount > 0 && <span className="text-caption text-muted">{t('bookings.refunded')}: <Money value={p.refundedAmount} currency={p.currency} minor /></span>}
+        </span>
+      ),
+    },
+    { key: 'status', header: t('common.status'), cell: (p) => <StatusPill tone={paymentStatusTone(p.status)}>{t(`enums.paymentStatus.${p.status}`)}</StatusPill> },
+    {
+      key: 'action',
+      header: <span className="sr-only">{t('common.actions')}</span>,
+      align: 'right',
+      cell: (p) => (
+        <IconLink href={`${href('/payment/result')}?paymentId=${p.id}`} label={p.status === 'PENDING' || p.status === 'CREATED' ? t('payments.check') : t('payments.details')} variant="raised" size="sm">
+          <ArrowUpRightIcon size={16} />
+        </IconLink>
+      ),
+    },
+  ];
   return (
     <div>
       <PageHeader title={t('account.nav.payments')} sub={t('payments.sub')} />
-      {q.isLoading ? (
-        <Skeleton className="h-60" />
-      ) : q.isError ? (
+      {q.isError ? (
         <ErrorState title={t('payments.loadError')} text={errorMessage(q.error, t)} onRetry={() => void q.refetch()} retryLabel={t('common.retry')} />
-      ) : !q.data?.items.length ? (
-        <EmptyState icon={<CardIcon />} title={t('payments.empty')} />
       ) : (
-        <>
-          <ul className="card divide-y divide-line">
-            {q.data.items.map((p) => (
-              <li key={p.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
-                <div className="min-w-0 flex-1">
-                  <div className="font-semibold">{p.description || t(`enums.paymentPurpose.${p.purpose}`)}</div>
-                  <div className="text-xs text-muted">
-                    {t(`enums.paymentPurpose.${p.purpose}`)} · {p.method === 'WALLET' ? t('payment.wallet') : `${t('payment.card')}${p.cardMask ? ` ${p.cardMask}` : ''}`} · {dateTime(p.createdAt)}
-                  </div>
-                  {p.items.length > 1 && <div className="mt-1 text-xs text-muted">{p.items.map((i) => i.name).join(', ')}</div>}
-                  {p.failureReason && <div className="mt-1 text-xs text-urgent">{p.failureReason}</div>}
-                </div>
-                <div className="text-right">
-                  <div className="font-bold tabular-nums">{formatMoney(p.amount, p.currency)}</div>
-                  {p.refundedAmount > 0 && <div className="text-xs text-muted">{t('bookings.refunded')}: {formatMoney(p.refundedAmount, p.currency)}</div>}
-                </div>
-                <Badge tone={TONE[p.status]}>{t(`enums.paymentStatus.${p.status}`)}</Badge>
-                {(p.status === 'PENDING' || p.status === 'CREATED') && (
-                  <Link className="text-sm font-semibold text-brand hover:underline" href={`${href('/payment/result')}?paymentId=${p.id}`}>
-                    {t('payments.check')}
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ul>
-          <Pagination className="mt-4" page={page} total={q.data.total} pageSize={15} onChange={setPage} />
-        </>
+        <DataTable
+          caption={t('account.nav.payments')}
+          loading={q.isLoading}
+          columns={columns}
+          rows={q.data?.items}
+          rowKey={(p) => p.id}
+          empty={<EmptyState className="shadow-none" icon={<ReceiptIcon />} title={t('payments.empty')} />}
+          mobileRow={(p) => (
+            <RowCard>
+              <div className="flex items-start justify-between gap-3">
+                <span className="min-w-0">
+                  <span className="block truncate font-medium">{p.description || t(`enums.paymentPurpose.${p.purpose}`)}</span>
+                  <span className="block truncate text-caption text-muted">{method(p)} · {dateTime(p.createdAt)}</span>
+                </span>
+                <Money value={p.amount} currency={p.currency} minor className="font-medium" />
+              </div>
+              <div className="mt-3 flex items-center justify-between">
+                <StatusPill tone={paymentStatusTone(p.status)}>{t(`enums.paymentStatus.${p.status}`)}</StatusPill>
+                <IconLink href={`${href('/payment/result')}?paymentId=${p.id}`} label={t('payments.details')} variant="raised" size="sm">
+                  <ArrowUpRightIcon size={16} />
+                </IconLink>
+              </div>
+            </RowCard>
+          )}
+          footer={q.data && <Pagination className="mt-4" page={page} total={q.data.total} pageSize={15} onChange={setPage} labels={{ prev: t('common.prev'), next: t('common.next'), nav: t('common.pagination') }} />}
+        />
       )}
     </div>
   );

@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { Button } from '@/components/ds';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { Button } from '@/components/ui/Button';
 
 const KEY = 'evtap.cookies';
 
@@ -27,14 +27,14 @@ export function CookieNotice() {
     setShow(false);
   };
   return (
-    <div role="region" aria-label={t('cookie.title')} className="fixed inset-x-3 bottom-3 z-[70] mx-auto max-w-3xl rounded-2xl border border-line bg-white p-4 shadow-2xl animate-in sm:inset-x-6 sm:flex sm:items-center sm:gap-4">
-      <p className="flex-1 text-sm text-ink/80">
-        🍪 {t('cookie.text')}{' '}
-        <Link href={href('/pages/privacy')} className="font-semibold text-brand underline-offset-2 hover:underline">
+    <div role="region" aria-label={t('cookie.title')} className="glass fixed inset-x-3 bottom-3 z-[70] mx-auto flex max-w-2xl flex-col gap-3 rounded-xl p-4 shadow-raised animate-in sm:inset-x-6 sm:flex-row sm:items-center sm:gap-4 sm:pl-6">
+      <p className="flex-1 text-label font-normal text-ink-secondary">
+        {t('cookie.text')}{' '}
+        <Link href={href('/pages/privacy')} className="font-medium text-ink underline underline-offset-2">
           {t('cookie.more')}
         </Link>
       </p>
-      <Button onClick={accept} className="mt-3 w-full sm:mt-0 sm:w-auto">
+      <Button onClick={accept} className="w-full sm:w-auto">
         {t('cookie.accept')}
       </Button>
     </div>

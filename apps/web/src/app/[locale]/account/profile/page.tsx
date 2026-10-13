@@ -8,23 +8,19 @@ import { api } from '@/lib/api';
 import { assetUrl } from '@/lib/config';
 import { errorMessage, zodFieldErrors } from '@/lib/errors';
 import { LOCALE_NAMES, switchLocalePath } from '@/lib/i18n';
-import { initials } from '@/lib/utils';
-import { PageHeader } from '@/components/account/PageHeader';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
 import { useToast } from '@/components/providers/ToastProvider';
-import { Button } from '@/components/ui/Button';
-import { Alert, Badge, PageSpinner } from '@/components/ui/feedback';
-import { Input, Select } from '@/components/ui/form';
-import { UploadIcon } from '@/components/ui/icons';
-import { Modal } from '@/components/ui/Modal';
+import { Avatar, Badge, Button, Card, CardHeader, Input, Modal, Notice, PageHeader, PageSpinner, Select } from '@/components/ds';
+import { UploadIcon } from '@/components/ds/icons';
+import { ThemeOptions } from '@/components/layout/LanguageSwitcher';
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
   return (
-    <section className="card p-5">
-      <h2 className="mb-4 font-semibold">{title}</h2>
+    <Card as="section">
+      <CardHeader title={title} sub={sub} />
       {children}
-    </section>
+    </Card>
   );
 }
 
@@ -110,23 +106,17 @@ function Profile() {
   });
 
   if (!user) return <PageSpinner />;
-  const avatarSrc = assetUrl(avatar);
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader title={t('account.nav.profile')} sub={t('profile.memberSince', { date: date(user.createdAt) })} />
-      {sp.get('welcome') && <Alert tone="success">{t('profile.welcome')}</Alert>}
+    <div className="flex flex-col gap-5">
+      <PageHeader className="mb-1" title={t('account.nav.profile')} sub={t('profile.memberSince', { date: date(user.createdAt) })} />
+      {sp.get('welcome') && <Notice tone="success">{t('profile.welcome')}</Notice>}
 
       <Section title={t('profile.personal')}>
         <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
           <div className="flex items-center gap-4">
-            {avatarSrc ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={avatarSrc} alt="" className="h-20 w-20 rounded-full object-cover" />
-            ) : (
-              <span className="flex h-20 w-20 items-center justify-center rounded-full bg-brand text-xl font-bold text-white">{initials(user.name)}</span>
-            )}
+            <Avatar name={user.name} url={avatar} size={80} />
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" loading={uploading} icon={<UploadIcon size={16} />} onClick={() => file.current?.click()}>
+              <Button variant="secondary" size="sm" loading={uploading} icon={<UploadIcon size={16} />} onClick={() => file.current?.click()}>
                 {t('profile.uploadAvatar')}
               </Button>
               {avatar && <Button variant="ghost" size="sm" onClick={() => setAvatar(null)}>{t('common.delete')}</Button>}
@@ -143,7 +133,7 @@ function Profile() {
           </div>
           <div className="flex items-center gap-3">
             <Button type="submit" loading={save.isPending}>{t('common.save')}</Button>
-            <Badge tone={user.accountType === 'BUSINESS' ? 'brand' : 'gray'}>{t(`enums.accountType.${user.accountType}`)}</Badge>
+            <Badge tone={user.accountType === 'BUSINESS' ? 'business' : 'neutral'} size="md">{t(`enums.accountType.${user.accountType}`)}</Badge>
           </div>
         </form>
       </Section>
@@ -154,14 +144,20 @@ function Profile() {
           <Input label={t('profile.newPassword')} type="password" autoComplete="new-password" value={pw.newPassword} onChange={(e) => setPw((o) => ({ ...o, newPassword: e.target.value }))} error={pwErrors.newPassword} />
           <Input label={t('profile.confirmPassword')} type="password" autoComplete="new-password" value={pw.confirm} onChange={(e) => setPw((o) => ({ ...o, confirm: e.target.value }))} error={pwErrors.confirm} />
           <div className="sm:col-span-3">
-            <Button type="submit" variant="outline" loading={changePw.isPending}>{t('profile.changePassword')}</Button>
+            <Button type="submit" variant="secondary" loading={changePw.isPending}>{t('profile.changePassword')}</Button>
           </div>
         </form>
       </Section>
 
+      <Section title={t('theme.title')} sub={t('theme.sub')}>
+        <div className="max-w-md">
+          <ThemeOptions />
+        </div>
+      </Section>
+
       <Section title={t('profile.danger')}>
-        <p className="mb-3 text-sm text-muted">{t('profile.deleteText')}</p>
-        <Button variant="danger" onClick={() => setDel(true)}>{t('profile.deleteAccount')}</Button>
+        <p className="mb-4 text-label font-normal text-ink-secondary">{t('profile.deleteText')}</p>
+        <Button variant="destructive" onClick={() => setDel(true)}>{t('profile.deleteAccount')}</Button>
       </Section>
 
       <Modal
@@ -172,13 +168,13 @@ function Profile() {
         footer={
           <>
             <Button variant="ghost" onClick={() => setDel(false)}>{t('common.cancel')}</Button>
-            <Button variant="danger" disabled={confirmText.trim().toLowerCase() !== word.toLowerCase()} loading={remove.isPending} onClick={() => remove.mutate()}>
+            <Button variant="destructive" disabled={confirmText.trim().toLowerCase() !== word.toLowerCase()} loading={remove.isPending} onClick={() => remove.mutate()}>
               {t('profile.deleteForever')}
             </Button>
           </>
         }
       >
-        <Alert tone="error" className="mb-3">{t('profile.deleteWarning')}</Alert>
+        <Notice tone="error" className="mb-4">{t('profile.deleteWarning')}</Notice>
         <Input label={t('profile.typeToConfirm', { word })} value={confirmText} onChange={(e) => setConfirmText(e.target.value)} />
       </Modal>
     </div>

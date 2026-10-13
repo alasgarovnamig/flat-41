@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { getCity, localized, type ListingCard, type Paginated } from '@evtap/shared';
 import { SearchView } from '@/components/search/SearchView';
-import { ListingGridSkeleton } from '@/components/listings/ListingCard';
+import { PropertyGridSkeleton } from '@/components/ds';
 import { api } from '@/lib/api';
 import { toLocale } from '@/lib/i18n';
 import { getT } from '@/lib/i18n.server';
@@ -35,7 +35,7 @@ export default async function SearchPage({ searchParams }: Props) {
     initial = null; // the client retries and shows an error state
   }
   return (
-    <Suspense fallback={<div className="container-page py-6"><ListingGridSkeleton n={9} cols={3} /></div>}>
+    <Suspense fallback={<div className="container-page py-8"><PropertyGridSkeleton n={9} cols={3} /></div>}>
       <SearchView initialData={initial} initialKey={stateToSearch(state)} />
     </Suspense>
   );

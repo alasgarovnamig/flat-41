@@ -1,64 +1,98 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
 import { LOCALES, type Locale } from '@evtap/shared';
 import { LOCALE_NAMES, LOCALE_SHORT, switchLocalePath } from '@/lib/i18n';
+import { useTheme, type ThemePref } from '@/lib/theme';
 import { cn } from '@/lib/utils';
+import { Popover, Segmented, iconButtonClass } from '@/components/ds';
+import { CheckIcon, MonitorIcon, MoonIcon, SettingsIcon, SunIcon } from '@/components/ds/icons';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { CheckIcon, GlobeIcon } from '@/components/ui/icons';
 
-export function LanguageSwitcher({ compact }: { compact?: boolean }) {
-  const { locale, t } = useI18n();
+export function useSwitchLocale() {
   const pathname = usePathname();
   const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const fn = (e: MouseEvent) => ref.current && !ref.current.contains(e.target as Node) && setOpen(false);
-    document.addEventListener('mousedown', fn);
-    return () => document.removeEventListener('mousedown', fn);
-  }, [open]);
-  const go = (l: Locale) => {
-    setOpen(false);
+  return (l: Locale) => {
     document.cookie = `NEXT_LOCALE=${l}; path=/; max-age=31536000; samesite=lax`;
     const qs = window.location.search.replace(/^\?/, '');
     router.push(switchLocalePath(pathname, l) + (qs ? `?${qs}` : ''));
   };
+}
+
+/** Language pills (AZ / RU / EN). */
+export function LanguageOptions({ onDone }: { onDone?: () => void }) {
+  const { locale, t } = useI18n();
+  const go = useSwitchLocale();
   return (
-    <div className="relative" ref={ref}>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-label={t('header.language')}
-        className="flex h-10 items-center gap-1.5 rounded-xl px-2.5 text-sm font-semibold text-ink hover:bg-ink/5"
-      >
-        <GlobeIcon size={18} />
-        {!compact && LOCALE_SHORT[locale]}
-      </button>
-      {open && (
-        <div role="menu" className="absolute right-0 z-50 mt-1 w-44 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-xl animate-in">
-          {LOCALES.map((l) => (
-            <button
-              key={l}
-              role="menuitemradio"
-              aria-checked={l === locale}
-              type="button"
-              onClick={() => go(l)}
-              className={cn('flex w-full items-center justify-between px-3 py-2 text-sm hover:bg-surface', l === locale && 'font-semibold text-brand')}
-            >
-              <span>
-                <span className="mr-2 inline-block w-6 text-xs font-bold text-muted">{LOCALE_SHORT[l]}</span>
-                {LOCALE_NAMES[l]}
-              </span>
-              {l === locale && <CheckIcon size={16} />}
-            </button>
-          ))}
+    <div role="radiogroup" aria-label={t('header.language')} className="flex flex-col">
+      {LOCALES.map((l) => (
+        <button
+          key={l}
+          type="button"
+          role="radio"
+          aria-checked={l === locale}
+          onClick={() => {
+            onDone?.();
+            if (l !== locale) go(l);
+          }}
+          className={cn('flex min-h-11 items-center justify-between gap-3 rounded-md px-3 text-[14px] hover:bg-surface-sunken', l === locale && 'font-medium')}
+        >
+          <span className="flex items-center gap-3">
+            <span className="flex h-7 w-9 items-center justify-center rounded-pill bg-pill text-[11px] font-semibold">{LOCALE_SHORT[l]}</span>
+            {LOCALE_NAMES[l]}
+          </span>
+          {l === locale && <CheckIcon size={16} />}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function ThemeOptions() {
+  const { t } = useI18n();
+  const { pref, setPref } = useTheme();
+  return (
+    <Segmented<ThemePref>
+      block
+      ariaLabel={t('theme.title')}
+      value={pref}
+      onChange={setPref}
+      options={[
+        { value: 'light', label: <><SunIcon size={15} /> {t('theme.light')}</> },
+        { value: 'dark', label: <><MoonIcon size={15} /> {t('theme.dark')}</> },
+        { value: 'system', label: <><MonitorIcon size={15} /> {t('theme.system')}</> },
+      ]}
+      size="sm"
+    />
+  );
+}
+
+/** Settings icon button → popover with language + theme. */
+export function SettingsMenu() {
+  const { t } = useI18n();
+  return (
+    <Popover
+      align="right"
+      width="w-80"
+      panelClassName="p-3"
+      trigger={({ open, toggle, id }) => (
+        <button type="button" onClick={toggle} aria-expanded={open} aria-controls={open ? id : undefined} aria-haspopup="dialog" aria-label={t('settings.title')} title={t('settings.title')} className={iconButtonClass('sunken')}>
+          <SettingsIcon size={20} />
+        </button>
+      )}
+    >
+      {(close) => (
+        <div className="flex flex-col gap-3">
+          <div>
+            <div className="mb-2 px-1 text-caption text-muted">{t('theme.title')}</div>
+            <ThemeOptions />
+          </div>
+          <div>
+            <div className="mb-1 px-1 text-caption text-muted">{t('header.language')}</div>
+            <LanguageOptions onDone={close} />
+          </div>
         </div>
       )}
-    </div>
+    </Popover>
   );
 }

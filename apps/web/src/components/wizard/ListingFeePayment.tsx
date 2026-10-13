@@ -7,12 +7,11 @@ import { DEFAULT_SETTINGS, formatMoney, type ListingCard, type PaymentMethod } f
 import { api } from '@/lib/api';
 import { followCheckout, paymentReturnUrl } from '@/lib/payments';
 import { qk } from '@/lib/query-keys';
+import { Button, Card, LinkButton, Money, Notice } from '@/components/ds';
+import { DocIcon } from '@/components/ds/icons';
+import { PayMethodPicker } from '@/components/payments/PayMethod';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { PayMethodPicker } from '@/components/payments/PayMethod';
-import { Button, LinkButton } from '@/components/ui/Button';
-import { Alert } from '@/components/ui/feedback';
-import { DocIcon } from '@/components/ui/icons';
 
 /** DRAFT listing waiting for the listing fee (free quota exhausted) → POST /checkout { purpose: LISTING_FEE }. */
 export function ListingFeePayment({ listing }: { listing: Pick<ListingCard, 'id' | 'title'> }) {
@@ -27,20 +26,22 @@ export function ListingFeePayment({ listing }: { listing: Pick<ListingCard, 'id'
     onSuccess: (c) => followCheckout(c, locale, router.push),
   });
   return (
-    <div className="mx-auto max-w-xl rounded-2xl border border-line bg-white p-6 shadow-card sm:p-8">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-vip-50 text-amber-600">
-        <DocIcon size={28} />
+    <Card pad="lg" className="mx-auto max-w-xl">
+      <div className="flex h-18 w-18 items-center justify-center rounded-full bg-surface-sunken">
+        <DocIcon size={30} />
       </div>
-      <h1 className="mt-4 text-2xl font-bold">{t('fee.title')}</h1>
-      <p className="mt-1 text-muted">{t('fee.text', { free: user?.quota.freeLimit ?? DEFAULT_SETTINGS.freeListingsPerMonth })}</p>
-      <div className="mt-5 flex items-center justify-between rounded-xl bg-surface px-4 py-3">
-        <span className="line-clamp-1 pr-3 text-sm">{listing.title}</span>
-        <span className="text-lg font-bold">{formatMoney(fee)}</span>
+      <h1 className="mt-5 text-h1">{t('fee.title')}</h1>
+      <p className="mt-2 text-ink-secondary">{t('fee.text', { free: user?.quota.freeLimit ?? DEFAULT_SETTINGS.freeListingsPerMonth })}</p>
+      <div className="mt-6 flex items-center justify-between gap-4 rounded-lg bg-surface-raised px-5 py-4 shadow-pill">
+        <span className="line-clamp-2 text-label">{listing.title}</span>
+        <Money value={fee} minor className="shrink-0 font-display text-[28px] leading-none tracking-[-0.6px]" />
       </div>
       <div className="mt-5">
         <PayMethodPicker value={method} onChange={setMethod} amount={fee} />
       </div>
-      <Alert tone="info" className="mt-4">{t('fee.draftNote')}</Alert>
+      <Notice tone="neutral" className="mt-4">
+        {t('fee.draftNote')}
+      </Notice>
       <div className="mt-6 flex flex-col gap-2 sm:flex-row-reverse">
         <Button size="lg" className="flex-1" loading={pay.isPending} onClick={() => pay.mutate()}>
           {t('fee.pay', { amount: formatMoney(fee) })}
@@ -49,6 +50,6 @@ export function ListingFeePayment({ listing }: { listing: Pick<ListingCard, 'id'
           {t('fee.later')}
         </LinkButton>
       </div>
-    </div>
+    </Card>
   );
 }

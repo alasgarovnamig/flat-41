@@ -4,10 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 import { api, isApiError } from '@/lib/api';
 import { errorMessage } from '@/lib/errors';
 import { qk } from '@/lib/query-keys';
+import { ErrorState, LinkButton, PageSpinner } from '@/components/ds';
+import { SearchIcon } from '@/components/ds/icons';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { LinkButton } from '@/components/ui/Button';
-import { ErrorState, PageSpinner } from '@/components/ui/feedback';
 import { ListingDetailView } from './ListingDetailView';
 
 /**
@@ -25,10 +25,10 @@ export function ListingClientLoader({ id }: { id: string }) {
     <div className="container-page py-16">
       {notFound ? (
         <div className="flex flex-col items-center text-center">
-          <div className="text-6xl font-black text-brand/80">404</div>
-          <h1 className="mt-3 text-2xl font-bold">{t('listing.notFound')}</h1>
-          <p className="mt-2 text-muted">{t('listing.notFoundText')}</p>
-          <LinkButton href={href('/search')} className="mt-6">
+          <div className="font-display text-[96px] font-light leading-none tracking-[-4px]">404</div>
+          <h1 className="mt-4 text-h2">{t('listing.notFound')}</h1>
+          <p className="mt-2 max-w-md text-ink-secondary">{t('listing.notFoundText')}</p>
+          <LinkButton href={href('/search')} className="mt-8" icon={<SearchIcon size={18} />}>
             {t('notFound.search')}
           </LinkButton>
         </div>

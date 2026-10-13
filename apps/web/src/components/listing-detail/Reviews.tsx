@@ -4,21 +4,17 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import type { Review } from '@evtap/shared';
 import { api } from '@/lib/api';
-import { assetUrl } from '@/lib/config';
 import { qk } from '@/lib/query-keys';
-import { cn, initials } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { Avatar, BigNumber, Button, Card, Pagination, Skeleton, Textarea } from '@/components/ds';
+import { StarIcon } from '@/components/ds/icons';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { Button } from '@/components/ui/Button';
-import { Skeleton } from '@/components/ui/feedback';
-import { Textarea } from '@/components/ui/form';
-import { StarIcon } from '@/components/ui/icons';
-import { Pagination } from '@/components/ui/Pagination';
 
 export function Stars({ value, size = 14, className }: { value: number; size?: number; className?: string }) {
   return (
-    <span className={cn('inline-flex', className)} aria-label={`${value}/5`}>
+    <span className={cn('inline-flex', className)} role="img" aria-label={`${value}/5`}>
       {[1, 2, 3, 4, 5].map((i) => (
-        <StarIcon key={i} size={size} filled={i <= Math.round(value)} className={i <= Math.round(value) ? 'text-vip' : 'text-ink/20'} />
+        <StarIcon key={i} size={size} filled={i <= Math.round(value)} className={i <= Math.round(value) ? 'text-star' : 'text-subtle'} />
       ))}
     </span>
   );
@@ -36,32 +32,26 @@ function ReviewItem({ r, canReply }: { r: Review; canReply: boolean }) {
       void qc.invalidateQueries({ queryKey: ['listings', r.listingId, 'reviews'] });
     },
   });
-  const avatar = assetUrl(r.author.avatarUrl);
   return (
-    <li className="border-b border-line py-4 last:border-0">
+    <li className="rounded-lg bg-surface-raised p-4 shadow-pill">
       <div className="flex items-center gap-3">
-        {avatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatar} alt="" className="h-10 w-10 rounded-full object-cover" />
-        ) : (
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-sm font-bold text-brand">{initials(r.author.name)}</span>
-        )}
-        <div>
-          <div className="text-sm font-semibold">{r.author.name}</div>
-          <div className="flex items-center gap-2 text-xs text-muted">
+        <Avatar name={r.author.name} url={r.author.avatarUrl} size={40} />
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[14px] font-medium">{r.author.name}</div>
+          <div className="flex items-center gap-2 text-caption text-muted">
             <Stars value={r.rating} size={12} /> {date(r.createdAt, { month: 'long', year: 'numeric' })}
           </div>
         </div>
       </div>
-      <p className="mt-2 whitespace-pre-line text-sm leading-relaxed">{r.comment}</p>
+      <p className="mt-3 whitespace-pre-line text-[14px] leading-relaxed text-ink-secondary">{r.comment}</p>
       {r.hostReply && (
-        <div className="ml-6 mt-3 rounded-xl bg-surface p-3 text-sm">
-          <div className="mb-1 text-xs font-semibold text-muted">{t('reviews.hostReply')}</div>
+        <div className="mt-3 rounded-md bg-surface-sunken p-3 text-[14px]">
+          <div className="mb-1 text-caption text-muted">{t('reviews.hostReply')}</div>
           {r.hostReply}
         </div>
       )}
       {canReply && !r.hostReply && (
-        <div className="ml-6 mt-2">
+        <div className="mt-3">
           {open ? (
             <div className="flex flex-col gap-2">
               <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} aria-label={t('reviews.reply')} maxLength={2000} />
@@ -75,9 +65,9 @@ function ReviewItem({ r, canReply }: { r: Review; canReply: boolean }) {
               </div>
             </div>
           ) : (
-            <button type="button" className="text-sm font-semibold text-brand hover:underline" onClick={() => setOpen(true)}>
+            <Button size="sm" variant="secondary" onClick={() => setOpen(true)}>
               {t('reviews.reply')}
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -90,29 +80,36 @@ export function Reviews({ listingId, rating, count, isOwner }: { listingId: stri
   const [page, setPage] = useState(1);
   const q = useQuery({ queryKey: qk.reviews(listingId, page), queryFn: () => api.listings.reviews(listingId, { page, pageSize: 5 }), retry: false });
   return (
-    <section aria-labelledby="reviews-h">
-      <h2 id="reviews-h" className="flex items-center gap-2 text-xl font-bold">
-        <StarIcon className="text-vip" /> {rating != null ? rating.toFixed(1) : '—'} · {t('reviews.count', { n: q.data?.total ?? count })}
-      </h2>
+    <Card aria-labelledby="reviews-h">
+      <div className="mb-4 flex items-end justify-between gap-3">
+        <h2 id="reviews-h" className="text-h3">
+          {t('reviews.title')}
+        </h2>
+        <div className="flex items-center gap-2">
+          <StarIcon size={20} filled className="text-star" />
+          <BigNumber size="sm">{rating != null ? rating.toFixed(1) : '—'}</BigNumber>
+          <span className="text-label font-normal text-muted">· {t('reviews.count', { n: q.data?.total ?? count })}</span>
+        </div>
+      </div>
       {q.isLoading ? (
-        <div className="mt-4 space-y-3">
-          <Skeleton className="h-16" />
-          <Skeleton className="h-16" />
+        <div className="space-y-3">
+          <Skeleton className="h-24 rounded-lg" />
+          <Skeleton className="h-24 rounded-lg" />
         </div>
       ) : q.isError ? (
-        <p className="mt-3 text-sm text-muted">{t('reviews.loadError')}</p>
+        <p className="text-label text-muted">{t('reviews.loadError')}</p>
       ) : !q.data?.items.length ? (
-        <p className="mt-3 text-sm text-muted">{t('reviews.empty')}</p>
+        <p className="rounded-lg bg-surface-sunken p-4 text-label text-ink-secondary">{t('reviews.empty')}</p>
       ) : (
         <>
-          <ul className="mt-2">
+          <ul className="flex flex-col gap-3">
             {q.data.items.map((r) => (
               <ReviewItem key={r.id} r={r} canReply={isOwner} />
             ))}
           </ul>
-          <Pagination className="mt-4" page={page} total={q.data.total} pageSize={5} onChange={setPage} />
+          <Pagination className="mt-4" page={page} total={q.data.total} pageSize={5} onChange={setPage} labels={{ prev: t('common.prev'), next: t('common.next'), nav: t('common.pagination') }} />
         </>
       )}
-    </section>
+    </Card>
   );
 }

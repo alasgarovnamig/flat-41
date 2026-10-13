@@ -1,19 +1,21 @@
 import type { TFunction } from './i18n';
+import { ERROR_CODES } from '@evtap/shared';
 import { isApiError } from './api';
 
-/** Error codes we have translations for (messages/*.json → errors.<CODE>). */
-export const KNOWN_ERROR_CODES = [
-  'NETWORK_ERROR', 'VALIDATION_ERROR', 'UNAUTHORIZED', 'FORBIDDEN', 'NOT_FOUND', 'CONFLICT', 'INTERNAL',
-  'OTP_INVALID', 'OTP_EXPIRED', 'OTP_TOO_FREQUENT', 'OTP_TOO_MANY_ATTEMPTS', 'INVALID_CREDENTIALS', 'USER_EXISTS',
-  'USER_BLOCKED', 'REFRESH_INVALID', 'REFRESH_REUSED', 'INSUFFICIENT_FUNDS', 'QUOTA_EXCEEDED', 'NOT_AVAILABLE',
-  'DATES_UNAVAILABLE', 'LISTING_NOT_ACTIVE', 'NO_CREDITS', 'PLAN_LIMIT', 'ALREADY_REVIEWED', 'NOT_REVIEWABLE',
-  'NOT_CANCELLABLE', 'AGENCY_EXISTS', 'TOO_MANY_REQUESTS', 'PAYMENT_FAILED', 'FILE_TOO_LARGE', 'UNSUPPORTED_FILE',
+/**
+ * Error codes we translate (messages/*.json → errors.<CODE>): the contract's stable ERROR_CODES plus a few
+ * client-side / legacy ones. Unknown codes fall back to the HTTP status.
+ */
+const CLIENT_CODES = [
+  'NETWORK_ERROR', 'TOO_MANY_REQUESTS', 'QUOTA_EXCEEDED', 'NOT_AVAILABLE', 'DATES_UNAVAILABLE', 'PLAN_LIMIT',
+  'NOT_REVIEWABLE', 'NOT_CANCELLABLE', 'AGENCY_EXISTS', 'PAYMENT_FAILED', 'UNSUPPORTED_FILE',
 ] as const;
+export const KNOWN_ERROR_CODES: readonly string[] = [...ERROR_CODES, ...CLIENT_CODES];
 
 /** Human readable, localized message for any thrown error (switches on ApiError.code). */
 export function errorMessage(e: unknown, t: TFunction): string {
   if (isApiError(e)) {
-    if (e.code && (KNOWN_ERROR_CODES as readonly string[]).includes(e.code)) {
+    if (e.code && KNOWN_ERROR_CODES.includes(e.code)) {
       const base = t(`errors.${e.code}`);
       if (e.code === 'VALIDATION_ERROR' && e.messages.length) return `${base}: ${e.messages.slice(0, 3).join('; ')}`;
       return base;
@@ -22,7 +24,7 @@ export function errorMessage(e: unknown, t: TFunction): string {
     if (e.status === 401) return t('errors.UNAUTHORIZED');
     if (e.status === 403) return t('errors.FORBIDDEN');
     if (e.status === 404) return t('errors.NOT_FOUND');
-    if (e.status === 429) return t('errors.TOO_MANY_REQUESTS');
+    if (e.status === 429) return t('errors.RATE_LIMITED');
     if (e.status >= 500) return t('errors.INTERNAL');
     return e.message || t('errors.generic');
   }

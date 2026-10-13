@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { Skeleton } from '@/components/ui/feedback';
+import { Skeleton } from '@/components/ds/feedback';
 
 const loading = () => <Skeleton className="h-full min-h-[260px] w-full rounded-none" />;
 

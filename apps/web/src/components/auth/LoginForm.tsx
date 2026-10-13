@@ -6,16 +6,15 @@ import { useEffect, useState } from 'react';
 import { formatPhone, loginSchema, otpRequestSchema, otpVerifySchema, registerSchema, type AuthResponse } from '@evtap/shared';
 import { api } from '@/lib/api';
 import { errorMessage, zodFieldErrors } from '@/lib/errors';
+import { Button, Input, Notice, Segmented } from '@/components/ds';
+import { ArrowUpRightIcon, PhoneIcon } from '@/components/ds/icons';
+import { LogoMark } from '@/components/layout/Logo';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { LogoMark } from '@/components/layout/Logo';
-import { Button } from '@/components/ui/Button';
-import { Alert } from '@/components/ui/feedback';
-import { Input } from '@/components/ui/form';
-import { Segmented } from '@/components/ui/form';
-import { PhoneIcon } from '@/components/ui/icons';
 
 type Tab = 'phone' | 'email' | 'register';
+
+const safeNext = (next: string | null) => (next && next.startsWith('/') && !next.startsWith('//') ? next : null);
 
 function useAfterLogin() {
   const { signIn } = useAuth();
@@ -24,9 +23,7 @@ function useAfterLogin() {
   const { href } = useI18n();
   return (res: AuthResponse) => {
     signIn(res);
-    const next = sp.get('next');
-    const safe = next && next.startsWith('/') && !next.startsWith('//') ? next : null;
-    router.replace(safe ?? (res.isNew ? href('/account/profile?welcome=1') : href('/account/listings')));
+    router.replace(safeNext(sp.get('next')) ?? (res.isNew ? href('/account/profile?welcome=1') : href('/account')));
   };
 }
 
@@ -81,25 +78,25 @@ function PhoneOtp() {
   if (step === 'phone')
     return (
       <form onSubmit={sendCode} className="flex flex-col gap-4" noValidate>
-        <Input label={t('auth.phone')} type="tel" inputMode="tel" autoComplete="tel" placeholder="050 123 45 67" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} hint={t('auth.phoneHint')} autoFocus />
-        {formError && <Alert tone="error">{formError}</Alert>}
-        <Button type="submit" size="lg" loading={request.isPending} icon={<PhoneIcon size={18} />}>
+        <Input label={t('auth.phone')} type="tel" inputMode="tel" autoComplete="tel" placeholder="050 123 45 67" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} hint={t('auth.phoneHint')} leading={<PhoneIcon size={18} />} autoFocus />
+        {formError && <Notice tone="error">{formError}</Notice>}
+        <Button type="submit" size="lg" loading={request.isPending} trailing={<ArrowUpRightIcon size={18} />}>
           {t('auth.getCode')}
         </Button>
       </form>
     );
   return (
     <form onSubmit={submitCode} className="flex flex-col gap-4" noValidate>
-      <p className="text-sm text-muted">
+      <p className="text-label font-normal text-ink-secondary">
         {t('auth.codeSent', { phone: formatPhone(normalized) })}{' '}
-        <button type="button" className="font-semibold text-brand hover:underline" onClick={() => { setStep('phone'); setCode(''); }}>
+        <button type="button" className="font-medium text-ink underline underline-offset-2" onClick={() => { setStep('phone'); setCode(''); }}>
           {t('auth.changePhone')}
         </button>
       </p>
       {devCode && (
-        <Alert tone="info">
+        <Notice tone="neutral">
           {t('auth.devCode')}: <b className="font-mono tracking-widest">{devCode}</b>
-        </Alert>
+        </Notice>
       )}
       <Input
         label={t('auth.code')}
@@ -107,20 +104,20 @@ function PhoneOtp() {
         autoComplete="one-time-code"
         maxLength={6}
         placeholder="••••••"
-        className="text-center font-mono text-2xl tracking-[0.5em]"
+        className="h-14 text-center font-mono text-2xl tracking-[0.5em]"
         value={code}
         onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
         error={errors.code}
         autoFocus
       />
       <Input label={t('auth.nameOptional')} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} hint={t('auth.nameHint')} />
-      {formError && <Alert tone="error">{formError}</Alert>}
+      {formError && <Notice tone="error">{formError}</Notice>}
       <Button type="submit" size="lg" loading={verify.isPending}>
         {t('auth.signIn')}
       </Button>
-      <button type="button" disabled={cooldown > 0 || request.isPending} onClick={() => sendCode()} className="text-sm font-semibold text-brand disabled:text-muted">
+      <Button variant="ghost" disabled={cooldown > 0 || request.isPending} onClick={() => sendCode()}>
         {cooldown > 0 ? t('auth.resendIn', { s: cooldown }) : t('auth.resend')}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -144,7 +141,7 @@ function EmailLogin() {
     <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
       <Input label={t('auth.login')} autoComplete="username" value={login} onChange={(e) => setLogin(e.target.value)} error={errors.login} placeholder="name@mail.az" />
       <Input label={t('auth.password')} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} error={errors.password} />
-      {formError && <Alert tone="error">{formError}</Alert>}
+      {formError && <Notice tone="error">{formError}</Notice>}
       <Button type="submit" size="lg" loading={m.isPending}>
         {t('auth.signIn')}
       </Button>
@@ -173,7 +170,7 @@ function Register() {
       <Input label={t('form.email')} type="email" autoComplete="email" value={v.email} onChange={set('email')} error={errors.email} required />
       <Input label={t('auth.password')} type="password" autoComplete="new-password" value={v.password} onChange={set('password')} error={errors.password} hint={t('auth.passwordHint')} required />
       <Input label={t('auth.phoneOptional')} type="tel" autoComplete="tel" value={v.phone} onChange={set('phone')} error={errors.phone} placeholder="050 123 45 67" />
-      {formError && <Alert tone="error">{formError}</Alert>}
+      {formError && <Notice tone="error">{formError}</Notice>}
       <Button type="submit" size="lg" loading={m.isPending}>
         {t('auth.createAccount')}
       </Button>
@@ -188,21 +185,20 @@ export function LoginForm() {
   const sp = useSearchParams();
   const [tab, setTab] = useState<Tab>((sp.get('tab') as Tab) || 'phone');
   useEffect(() => {
-    if (status === 'authenticated') {
-      const next = sp.get('next');
-      router.replace(next && next.startsWith('/') && !next.startsWith('//') ? next : href('/account/listings'));
-    }
+    if (status === 'authenticated') router.replace(safeNext(sp.get('next')) ?? href('/account'));
   }, [status, router, sp, href]);
 
   return (
-    <div className="w-full max-w-md rounded-2xl border border-line bg-white p-6 shadow-card sm:p-8">
-      <div className="mb-6 flex flex-col items-center text-center">
-        <LogoMark size={44} />
-        <h1 className="mt-3 text-2xl font-bold">{tab === 'register' ? t('auth.registerTitle') : t('auth.title')}</h1>
-        <p className="mt-1 text-sm text-muted">{t('auth.subtitle')}</p>
+    <div className="w-full max-w-md rounded-xl bg-surface-raised p-6 shadow-raised sm:p-8">
+      <div className="mb-6 flex flex-col items-start">
+        <LogoMark size={48} />
+        <h1 className="mt-5 text-h1">{tab === 'register' ? t('auth.registerTitle') : t('auth.title')}</h1>
+        <p className="mt-1 text-label font-normal text-ink-secondary">{t('auth.subtitle')}</p>
       </div>
       <Segmented
-        className="mb-6 w-full [&>button]:flex-1"
+        block
+        className="mb-6"
+        ariaLabel={t('auth.title')}
         value={tab}
         onChange={setTab}
         options={[
@@ -214,7 +210,7 @@ export function LoginForm() {
       {tab === 'phone' && <PhoneOtp />}
       {tab === 'email' && <EmailLogin />}
       {tab === 'register' && <Register />}
-      <p className="mt-6 text-center text-xs text-muted">{t('auth.terms')}</p>
+      <p className="mt-6 text-caption text-muted">{t('auth.terms')}</p>
     </div>
   );
 }

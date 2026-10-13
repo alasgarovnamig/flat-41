@@ -1,23 +1,22 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
-export function LogoMark({ size = 32, className }: { size?: number; className?: string }) {
+/** Black rounded square with a white roof-and-door mark (inverts in dark mode via tokens). */
+export function LogoMark({ size = 40, className }: { size?: number; className?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" className={className} aria-hidden>
-      <rect width="32" height="32" rx="9" fill="#0E7C66" />
-      <path d="M8 15.5 16 9l8 6.5V23a1 1 0 0 1-1 1h-4.5v-5h-5v5H9a1 1 0 0 1-1-1z" fill="#fff" />
-      <circle cx="23.5" cy="9.5" r="3" fill="#F5A524" />
+    <svg width={size} height={size} viewBox="0 0 40 40" className={className} aria-hidden focusable="false">
+      <rect width="40" height="40" rx="12" style={{ fill: 'var(--c-ink)' }} />
+      <path d="M10 27.5 20 13l10 14.5" fill="none" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'var(--c-on-ink)' }} />
+      <rect x="17.4" y="22.6" width="5.2" height="6.4" rx="1.4" style={{ fill: 'var(--c-accent)' }} />
     </svg>
   );
 }
 
-export function Logo({ href, light, className }: { href: string; light?: boolean; className?: string }) {
+export function Logo({ href, className, size = 40, label = 'EvTap' }: { href: string; className?: string; size?: number; label?: string }) {
   return (
-    <Link href={href} className={cn('flex items-center gap-2', className)} aria-label="EvTap">
-      <LogoMark />
-      <span className={cn('text-xl font-extrabold tracking-tight', light ? 'text-white' : 'text-ink')}>
-        Ev<span className={light ? 'text-vip' : 'text-brand'}>Tap</span>
-      </span>
+    <Link href={href} className={cn('flex shrink-0 items-center gap-2.5 rounded-pill', className)} aria-label={label}>
+      <LogoMark size={size} />
+      <span className="font-display text-[22px] font-medium tracking-[-0.4px] text-ink">EvTap</span>
     </Link>
   );
 }

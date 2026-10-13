@@ -13,7 +13,7 @@ import {
   type MyListing, type OtpRequestInput, type OtpVerifyInput, type Paginated, type Payment, type PublicUser,
   type RegisterInput, type ReportReason, type Review, type SavedSearch, type SavedSearchInput, type Subscription,
   type TimeseriesPoint, type UpdateListingInput, type UpdateMeInput, type Upload, type User, type Wallet,
-  type WalletTransaction, type DealType, type AgencyType, type Locale,
+  type WalletTransaction, type DealType, type AgencyType, type Locale, type PaymentMethod,
 } from '@evtap/shared';
 import { API_URL, SERVER_API_URL } from './config';
 import { tokenStore } from './tokens';
@@ -192,6 +192,7 @@ export type FeaturedQuery = { kind: 'vip' | 'premium'; dealType?: DealType; city
 export type ListingAction = 'MARK_SOLD' | 'ARCHIVE' | 'RENEW' | 'RESTORE';
 export type CreditKind = 'BUMP' | 'VIP_7' | 'PREMIUM_7';
 export interface AgencyStats { views: number; phoneViews: number; messages: number; listings: number; daily: TimeseriesPoint[] }
+export interface CmsPageLink { slug: string; title: string }
 export interface LocationsResponse { countries: unknown[]; cities: unknown[]; districts: unknown[]; metroStations: unknown[] }
 
 export const api = {
@@ -217,6 +218,8 @@ export const api = {
     banners: (placement: BannerPlacement) => get<Banner[]>('/banners', { placement }),
     bannerClick: (id: string) => post<Ok>(`/banners/${enc(id)}/click`),
     page: (slug: string) => get<CmsPage>(`/pages/${enc(slug)}`),
+    /** CMS page index for the footer / page nav — titles localised by ?locale */
+    pages: (locale: Locale) => get<CmsPageLink[]>('/pages', { locale }),
   },
   upload: uploadFile,
   listings: {
@@ -247,12 +250,15 @@ export const api = {
   savedSearches: {
     list: () => get<SavedSearch[]>('/saved-searches'),
     create: (b: SavedSearchInput) => post<SavedSearch>('/saved-searches', b),
+    update: (id: string, b: { name?: string; notify?: boolean }) => patch<SavedSearch>(`/saved-searches/${enc(id)}`, b),
     remove: (id: string) => del<Ok>(`/saved-searches/${enc(id)}`),
   },
   conversations: {
     list: (q?: PageQuery) => get<Paginated<Conversation>>('/conversations', q),
     start: (b: { listingId: string; message: string }) => post<Conversation>('/conversations', b),
     unreadCount: () => get<{ count: number }>('/conversations/unread-count'),
+    /** thread header (participant only) */
+    get: (id: string) => get<Conversation>(`/conversations/${enc(id)}`),
     messages: (id: string, q?: { before?: string; limit?: number }) => get<Message[]>(`/conversations/${enc(id)}/messages`, q),
     send: (id: string, body: string) => post<Message>(`/conversations/${enc(id)}/messages`, { body }),
     read: (id: string) => post<Ok>(`/conversations/${enc(id)}/read`),
@@ -262,6 +268,8 @@ export const api = {
     create: (b: CreateBookingInput) => post<{ booking: Booking; checkout: CheckoutResponse }>('/bookings', b),
     list: (q: { role: 'guest' | 'host'; status?: BookingStatus } & PageQuery) => get<Paginated<Booking>>('/bookings', q),
     get: (id: string) => get<Booking>(`/bookings/${enc(id)}`),
+    /** resume payment of a PENDING_PAYMENT booking (hold not expired) */
+    pay: (id: string, b: { method: PaymentMethod; returnUrl?: string }) => post<CheckoutResponse>(`/bookings/${enc(id)}/pay`, b),
     cancel: (id: string, reason?: string) => post<Booking>(`/bookings/${enc(id)}/cancel`, { reason }),
     review: (id: string, b: { rating: number; comment: string }) => post<Review>(`/bookings/${enc(id)}/review`, b),
     replyReview: (reviewId: string, reply: string) => post<Review>(`/reviews/${enc(reviewId)}/reply`, { reply }),

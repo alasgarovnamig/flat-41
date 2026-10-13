@@ -7,14 +7,18 @@ import { api } from '@/lib/api';
 import { errorMessage } from '@/lib/errors';
 import { qk } from '@/lib/query-keys';
 import { addDays, todayIso } from '@/lib/utils';
-import { PageHeader } from '@/components/account/PageHeader';
+import { Button, Calendar, Card, EmptyState, ErrorState, LinkButton, PageHeader, PageSpinner, Select } from '@/components/ds';
+import { CalendarIcon, PlusIcon } from '@/components/ds/icons';
 import { useI18n } from '@/components/providers/I18nProvider';
 import { useToast } from '@/components/providers/ToastProvider';
-import { Button, LinkButton } from '@/components/ui/Button';
-import { Calendar } from '@/components/ui/Calendar';
-import { EmptyState, ErrorState, PageSpinner } from '@/components/ui/feedback';
-import { Select } from '@/components/ui/form';
-import { CalendarIcon } from '@/components/ui/icons';
+
+function Legend({ swatch, label }: { swatch: string; label: string }) {
+  return (
+    <span className="inline-flex h-9 items-center gap-2 rounded-pill bg-surface-raised px-3 text-label shadow-pill">
+      <span className={`h-4 w-4 rounded-full ${swatch}`} aria-hidden /> {label}
+    </span>
+  );
+}
 
 function HostCalendar() {
   const { t, href } = useI18n();
@@ -50,8 +54,7 @@ function HostCalendar() {
 
   if (listings.isLoading) return <PageSpinner />;
   if (listings.isError) return <ErrorState title={t('myListings.loadError')} text={errorMessage(listings.error, t)} onRetry={() => void listings.refetch()} retryLabel={t('common.retry')} />;
-  if (!daily.length)
-    return <EmptyState icon={<CalendarIcon />} title={t('calendar.empty')} text={t('calendar.emptyText')} action={<LinkButton href={href('/listings/new')}>{t('nav.postAd')}</LinkButton>} />;
+  if (!daily.length) return <EmptyState icon={<CalendarIcon />} title={t('calendar.empty')} text={t('calendar.emptyText')} action={<LinkButton href={href('/listings/new')} icon={<PlusIcon size={18} />}>{t('nav.postAd')}</LinkButton>} />;
 
   const toggle = (iso: string) => {
     if (booked.has(iso) || iso < from) return;
@@ -65,8 +68,8 @@ function HostCalendar() {
   };
 
   return (
-    <div className="card p-5">
-      <div className="mb-4 flex flex-wrap items-end gap-3">
+    <Card>
+      <div className="mb-6 flex flex-wrap items-end gap-3">
         <Select label={t('calendar.listing')} wrapperClass="min-w-64 flex-1" value={selected} onChange={(e) => router.replace(`${pathname}?listing=${e.target.value}`, { scroll: false })}>
           {daily.map((l) => (
             <option key={l.id} value={l.id}>
@@ -74,7 +77,7 @@ function HostCalendar() {
             </option>
           ))}
         </Select>
-        <Button disabled={!dirty} loading={save.isPending} onClick={() => save.mutate()}>
+        <Button size="lg" disabled={!dirty} loading={save.isPending} onClick={() => save.mutate()}>
           {t('common.save')}
         </Button>
       </div>
@@ -84,23 +87,25 @@ function HostCalendar() {
         <PageSpinner />
       ) : (
         <>
-          <Calendar
-            months={2}
-            onDayClick={toggle}
-            dayState={(iso) => ({
-              disabled: iso < from || booked.has(iso),
-              marker: booked.has(iso) ? 'booked' : blocked.has(iso) ? 'blocked' : undefined,
-            })}
-          />
-          <div className="mt-4 flex flex-wrap gap-4 text-xs text-muted">
-            <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-urgent-50 ring-1 ring-urgent/40" /> {t('calendar.blocked')}</span>
-            <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-premium-50 ring-1 ring-premium/40" /> {t('calendar.booked')}</span>
-            <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-white ring-1 ring-line" /> {t('calendar.free')}</span>
+          <div className="rounded-lg bg-surface-raised p-4 shadow-pill sm:p-6">
+            <Calendar
+              months={2}
+              onDayClick={toggle}
+              dayState={(iso) => ({
+                disabled: iso < from || booked.has(iso),
+                marker: booked.has(iso) ? 'booked' : blocked.has(iso) ? 'blocked' : undefined,
+              })}
+            />
           </div>
-          <p className="mt-2 text-sm text-muted">{t('calendar.hint')}</p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Legend swatch="hatch bg-surface-sunken ring-1 ring-subtle" label={t('calendar.blocked')} />
+            <Legend swatch="bg-accent" label={t('calendar.booked')} />
+            <Legend swatch="bg-surface-raised ring-1 ring-hairline" label={t('calendar.free')} />
+          </div>
+          <p className="mt-3 text-label font-normal text-ink-secondary">{t('calendar.hint')}</p>
         </>
       )}
-    </div>
+    </Card>
   );
 }
 

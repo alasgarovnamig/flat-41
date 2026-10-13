@@ -42,7 +42,9 @@
     "notSelected": "Not selected",
     "noOptions": "Nothing found",
     "selectedCount": "{count} selected",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "actions": "Actions",
+    "pagination": "Pages"
   },
   "nav": {
     "main": "Main navigation",
@@ -127,7 +129,21 @@
     "businessText": "Publish more listings, get monthly promotion credits, an agency page and analytics.",
     "businessCta": "Compare plans",
     "appTitle": "EvTap in your pocket",
-    "appText": "Get notified about new listings and messages — download the app for iOS and Android."
+    "appText": "Get notified about new listings and messages — download the app for iOS and Android.",
+    "heroEyebrow": "Azerbaijan's real-estate marketplace",
+    "marketSale": "For sale",
+    "marketRent": "Long-term rent",
+    "marketDaily": "Daily rent · {n} listings",
+    "sparkAgencies": "Active listings per agency",
+    "sparkPerDay": "New listings per day, last 28 days",
+    "sparkPerHour": "New listings per hour, last 24 hours",
+    "statActive": "Active listings",
+    "statActiveCaption": "Across all cities",
+    "statAgencies": "Agencies",
+    "statAgenciesCaption": "Agencies and developers",
+    "statToday": "New today",
+    "statTodayCaption": "Last 24 hours",
+    "statsLabel": "Platform statistics"
   },
   "search": {
     "allListings": "All listings",
@@ -214,7 +230,10 @@
       "checkOut": "Check-out",
       "guests": "Guests",
       "bbox": "Map area"
-    }
+    },
+    "activeFilters": "Active filters",
+    "allFilters": "All filters",
+    "listingsWord": "listings"
   },
   "badges": {
     "premium": "Premium",
@@ -277,7 +296,9 @@
       "mortgage": "Mortgage",
       "maxGuests": "Max guests",
       "minNights": "Minimum nights"
-    }
+    },
+    "contact": "Contact and booking",
+    "openProfile": "Open profile"
   },
   "owner": {
     "title": "Your listing",
@@ -315,14 +336,17 @@
     "availabilityError": "Could not load availability",
     "nightsSelected": "Nights selected: {n}",
     "pickCheckIn": "Choose a check-in date",
-    "pickCheckOut": "Now choose a check-out date"
+    "pickCheckOut": "Now choose a check-out date",
+    "fewerGuests": "Fewer guests",
+    "moreGuests": "More guests"
   },
   "reviews": {
     "count": "{n} reviews",
     "empty": "No reviews yet.",
     "loadError": "Could not load reviews",
     "hostReply": "Host reply",
-    "reply": "Reply"
+    "reply": "Reply",
+    "title": "Reviews"
   },
   "mortgage": {
     "title": "Mortgage calculator",
@@ -337,7 +361,9 @@
     "totalPaid": "Total paid",
     "applyTitle": "Get a bank offer",
     "apply": "Apply for a mortgage",
-    "leadSent": "Request sent! A bank manager will call you soon."
+    "leadSent": "Request sent! A bank manager will call you soon.",
+    "breakdown": "Cost breakdown",
+    "interest": "Interest"
   },
   "form": {
     "name": "Name",
@@ -466,7 +492,9 @@
     "services": "Services",
     "summary": "Your order",
     "nothingSelected": "Nothing selected",
-    "pay": "Pay {amount}"
+    "pay": "Pay {amount}",
+    "choose": "Choose",
+    "selected": "Selected"
   },
   "result": {
     "title": "Payment result",
@@ -514,7 +542,8 @@
       "agency": "Agency profile",
       "members": "Agents",
       "agencyStats": "Agency statistics",
-      "profile": "Settings"
+      "profile": "Settings",
+      "overview": "Overview"
     }
   },
   "myListings": {
@@ -543,7 +572,11 @@
       "ARCHIVE": "Moved to archive",
       "RENEW": "Listing renewed",
       "RESTORE": "Listing restored"
-    }
+    },
+    "archiveHint": "The listing will be taken off the site. You can restore it later.",
+    "open": "Open listing",
+    "promotions": "Services",
+    "soldHint": "The listing will leave your active listings."
   },
   "favorites": {
     "count": "{n} saved listings",
@@ -561,7 +594,10 @@
     "notifyOn": "Notifications on",
     "newMatches": "{n} new",
     "open": "Open",
-    "deleted": "Search deleted"
+    "deleted": "Search deleted",
+    "notify": "Alerts",
+    "rename": "Rename",
+    "renamed": "Name updated"
   },
   "messages": {
     "empty": "No messages yet",
@@ -572,12 +608,19 @@
     "placeholder": "Write a message…",
     "loadOlder": "Load earlier messages",
     "live": "● Real-time updates are on",
-    "polling": "Updating every few seconds"
+    "polling": "Updating every few seconds",
+    "filter": "Search conversations",
+    "online": "Messages arrive instantly",
+    "pollingNote": "Messages refresh automatically",
+    "read": "Read",
+    "sent": "Sent",
+    "typing": "typing…"
   },
   "notifications": {
     "readAll": "Mark all as read",
     "empty": "No notifications",
-    "loadError": "Could not load notifications"
+    "loadError": "Could not load notifications",
+    "unread": "Unread"
   },
   "bookings": {
     "sub": "Your trips and your guests' reservations.",
@@ -604,7 +647,12 @@
     "cancelReason": "Reason (optional)",
     "cancelled": "Booking cancelled",
     "refundFull": "You will receive a full refund.",
-    "refundHalf": "Less than {hours} hours remain before check-in: 50% of the stay cost will be refunded."
+    "refundHalf": "Less than {hours} hours remain before check-in: 50% of the stay cost will be refunded.",
+    "dates": "Dates",
+    "holdNote": "Dates are held for a short time while you pay. If the hold has expired, book again.",
+    "payNow": "Pay",
+    "payTitle": "Complete the booking payment",
+    "role": "Role"
   },
   "calendar": {
     "sub": "Block dates when your property is not available.",
@@ -639,7 +687,8 @@
     "sub": "All your card and wallet payments.",
     "loadError": "Could not load payments",
     "empty": "No payments yet",
-    "check": "Check status"
+    "check": "Check status",
+    "details": "Payment details"
   },
   "business": {
     "title": "EvTap Business plans",
@@ -705,7 +754,8 @@
     "cancelledOk": "Auto-renewal turned off",
     "resumedOk": "Subscription resumed",
     "changePlan": "Change plan",
-    "choosePlan": "Choose a plan"
+    "choosePlan": "Choose a plan",
+    "period": "Billing period"
   },
   "agency": {
     "sub": "Your company's public page on EvTap.",
@@ -719,7 +769,9 @@
     "saved": "Agency profile saved",
     "verified": "Verified company",
     "notVerified": "Not verified yet",
-    "viewPublic": "View public page"
+    "viewPublic": "View public page",
+    "type": "Company type",
+    "noAgency": "You don't have an agency yet"
   },
   "members": {
     "sub": "Agents can post listings on behalf of your agency.",
@@ -729,7 +781,10 @@
     "add": "Add",
     "added": "Agent added",
     "empty": "No agents yet",
-    "joined": "joined {date}"
+    "joined": "joined {date}",
+    "joinedCol": "Joined",
+    "member": "Agent",
+    "role": "Role"
   },
   "agencies": {
     "title": "Agencies & developers",
@@ -743,7 +798,10 @@
     "listingsN": "{n} listings",
     "since": "on EvTap since {date}",
     "noListings": "No listings yet",
-    "metaDescription": "Listings from {name} on EvTap."
+    "metaDescription": "Listings from {name} on EvTap.",
+    "activeListings": "Active listings",
+    "listingsTitle": "Listings",
+    "type": "Type"
   },
   "user": {
     "title": "User",
@@ -762,7 +820,11 @@
     "phoneViewsN": "{n} phone views",
     "showTable": "Show table",
     "showChart": "Show chart",
-    "days": "{n} days"
+    "days": "{n} days",
+    "activeNow": "Right now",
+    "period": "Period",
+    "weekOverWeek": "week over week",
+    "weekly": "Views by week"
   },
   "profile": {
     "memberSince": "On EvTap since {date}",
@@ -841,7 +903,54 @@
     "TOO_MANY_REQUESTS": "Too many requests. Please wait a moment.",
     "PAYMENT_FAILED": "Payment failed",
     "FILE_TOO_LARGE": "The file is too large (max 10 MB)",
-    "UNSUPPORTED_FILE": "Only JPG, PNG and WEBP images are allowed"
+    "UNSUPPORTED_FILE": "Only JPG, PNG and WEBP images are allowed",
+    "RATE_LIMITED": "Too many requests. Please wait a moment.",
+    "TOKEN_INVALID": "Your session is no longer valid. Please sign in again.",
+    "INVALID_PASSWORD": "Current password is incorrect",
+    "EMAIL_TAKEN": "This e-mail is already in use",
+    "USER_NOT_FOUND": "User not found",
+    "FILE_REQUIRED": "Choose a file",
+    "UNSUPPORTED_FILE_TYPE": "Only JPG, PNG and WEBP images are allowed",
+    "INVALID_IMAGE": "The image could not be read. Choose another file.",
+    "INVALID_IMAGES": "Some photos are invalid. Please upload them again.",
+    "INVALID_LOCATION": "Check the address or the map pin",
+    "LISTING_BLOCKED": "This listing is blocked",
+    "LISTING_NOT_AVAILABLE": "This listing is not available",
+    "LISTING_NOT_PAID": "The listing fee has not been paid",
+    "LISTING_STATUS_INVALID": "This action is not available for the listing's status",
+    "INVALID_STATUS": "Invalid status",
+    "INVALID_STATUS_TRANSITION": "This status change is not possible",
+    "ALREADY_VERIFIED": "Already verified",
+    "NO_AGENCY": "You don't have an agency",
+    "ALREADY_IN_AGENCY": "This user already belongs to an agency",
+    "ALREADY_MEMBER": "This user is already on the team",
+    "AGENT_LIMIT_REACHED": "Your plan's agent limit is reached",
+    "CANNOT_REMOVE_OWNER": "The agency owner can't be removed",
+    "CANNOT_MODIFY_SELF": "You can't change your own account here",
+    "LIMIT_REACHED": "Limit reached",
+    "CANNOT_MESSAGE_SELF": "You can't message your own listing",
+    "MESSAGE_EMPTY": "The message is empty",
+    "RECIPIENT_UNAVAILABLE": "The recipient is unavailable",
+    "INVALID_CURSOR": "Please refresh the list",
+    "NOT_DAILY_RENT": "This listing is not a daily rental",
+    "NOT_BOOKABLE": "This listing can't be booked",
+    "BOOKING_NOT_CANCELLABLE": "This booking can no longer be cancelled",
+    "BOOKING_ALREADY_STARTED": "The stay has already started",
+    "BOOKING_NOT_COMPLETED": "Reviews are possible only after a completed stay",
+    "INVALID_AMOUNT": "Invalid amount",
+    "AMOUNT_OUT_OF_RANGE": "The amount is outside the allowed range",
+    "CURRENCY_NOT_SUPPORTED": "This currency is not supported",
+    "INVALID_SERVICE": "Service not found",
+    "INVALID_PLAN": "Plan not found",
+    "NO_SUBSCRIPTION": "You have no active subscription",
+    "SUBSCRIPTION_ENDED": "The subscription has ended",
+    "RETURN_URL_NOT_ALLOWED": "Return URL not allowed",
+    "PAYMENT_PROVIDER_UNAVAILABLE": "The payment provider is temporarily unavailable. Try again later.",
+    "INVALID_SIGNATURE": "The payment could not be verified",
+    "NOT_REFUNDABLE": "This payment can't be refunded",
+    "REFUND_REJECTED": "The refund was rejected",
+    "REFUND_AMOUNT_INVALID": "Invalid refund amount",
+    "FULFILMENT_FAILED": "Payment received but the service was not activated. Please contact support."
   },
   "enums": {
     "dealType": {
@@ -1006,5 +1115,39 @@
       "OWNER": "Owner",
       "AGENT": "Agent"
     }
+  },
+  "map": {
+    "expand": "Expand map",
+    "title": "Map"
+  },
+  "overview": {
+    "active": "Active",
+    "bonusIncluded": "Bonus included: {amount} ₼",
+    "colListing": "Listing",
+    "deltaHint": "Last 7 days vs. the previous 7",
+    "favoritesN": "Saved to favourites {n} times",
+    "hello": "Hello, {name}",
+    "last28": "Across all listings",
+    "listingsState": "My listings",
+    "messagesHint": "You have {n} unread messages",
+    "noStats": "No statistics yet",
+    "otherStatuses": "Other statuses: {n}",
+    "propertyObject": "Most viewed listings",
+    "quotaLeft": "Free listings left this month: {n} / {total}",
+    "recent": "Recent listings",
+    "sub": "Your listings, views and balance in one place",
+    "topListings": "Listing views",
+    "waiting": "Waiting",
+    "walletActivity": "Wallet activity, last 28 days"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "theme": {
+    "dark": "Dark",
+    "light": "Light",
+    "sub": "Site appearance",
+    "system": "System",
+    "title": "Theme"
   }
 }

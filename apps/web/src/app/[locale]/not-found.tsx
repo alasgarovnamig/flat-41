@@ -1,19 +1,22 @@
 'use client';
 
+import { HouseIllustration, LinkButton } from '@/components/ds';
+import { ArrowUpRightIcon, SearchIcon } from '@/components/ds/icons';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { LinkButton } from '@/components/ui/Button';
-import { SearchIcon } from '@/components/ui/icons';
 
 export default function NotFound() {
   const { t, href } = useI18n();
   return (
     <div className="container-page flex min-h-[60vh] flex-col items-center justify-center py-16 text-center">
-      <div className="text-7xl font-black tracking-tight text-brand/90">404</div>
-      <h1 className="mt-4 text-2xl font-bold">{t('notFound.title')}</h1>
-      <p className="mt-2 max-w-md text-muted">{t('notFound.text')}</p>
-      <div className="mt-6 flex flex-wrap justify-center gap-3">
-        <LinkButton href={href('/')}>{t('notFound.home')}</LinkButton>
-        <LinkButton href={href('/search')} variant="outline" icon={<SearchIcon size={18} />}>
+      <HouseIllustration className="w-full max-w-sm opacity-90" />
+      <div className="-mt-2 font-display text-[96px] font-light leading-none tracking-[-4px] text-ink">404</div>
+      <h1 className="mt-4 text-h2">{t('notFound.title')}</h1>
+      <p className="mt-2 max-w-md text-ink-secondary">{t('notFound.text')}</p>
+      <div className="mt-8 flex flex-wrap justify-center gap-2">
+        <LinkButton href={href('/')} trailing={<ArrowUpRightIcon size={16} />}>
+          {t('notFound.home')}
+        </LinkButton>
+        <LinkButton href={href('/search')} variant="secondary" icon={<SearchIcon size={18} />}>
           {t('notFound.search')}
         </LinkButton>
       </div>
