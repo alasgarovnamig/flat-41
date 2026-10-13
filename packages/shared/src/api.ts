@@ -188,7 +188,7 @@ export type ErrorCode = (typeof ERROR_CODES)[number];
 export const REALTIME = {
   path: '/ws',
   serverEvents: {
-    'message:new': 'Message & { conversationId }',
+    'message:new': 'Message & { conversationId } — sent to the recipient and to ALL connections of the sender (multi-device sync); clients dedupe by message id',
     'conversation:read': '{ conversationId, readerId, readAt }',
     'notification:new': 'AppNotification',
     'payment:updated': 'Payment',

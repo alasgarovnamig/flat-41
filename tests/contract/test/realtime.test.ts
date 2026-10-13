@@ -42,13 +42,14 @@ describe('realtime WebSocket', () => {
     assert.equal(n.readAt, null);
     assert.equal(n.data.conversationId, conv.id);
 
-    // the reply reaches the buyer, never echoed to the sender
+    // the reply reaches the buyer AND the sender's own connections (multi-device sync; clients dedupe by id)
     const b = await conn(buyer.token);
     const echo = s.collect('message:new', 1000);
     const reply = ok(await seller.post(`/conversations/${conv.id}/messages`, { body: 'Bəli!' }), D.Message);
     const got = shape(D.Message, await b.next('message:new'), 'message:new');
     assert.equal(got.id, reply.id);
-    assert.deepEqual(await echo, [], 'sender does not receive its own message');
+    const echoed = (await echo) as any[];
+    assert.ok(echoed.every((m) => m.id === reply.id && m.senderId === seller.id), 'sender devices may only receive the same message');
   });
 
   test('[v2] typing is relayed to the other participant only; conversation:read reaches the sender', v2, async () => {
