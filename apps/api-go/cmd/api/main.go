@@ -53,16 +53,20 @@ func run() error {
 	d.Jobs.Start(ctx)
 
 	srv := &http.Server{Addr: fmt.Sprintf(":%d", cfg.Port), Handler: handler, ReadHeaderTimeout: 10 * time.Second}
+	stopped := make(chan struct{})
 	go func() {
+		defer close(stopped)
 		<-ctx.Done()
 		shutdown, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
+		d.Shutdown(shutdown) // close WebSockets (1001) etc. — hijacked connections are not tracked by srv.Shutdown
 		_ = srv.Shutdown(shutdown)
 	}()
 	slog.Info("🚀 EvTap API", "url", fmt.Sprintf("http://localhost:%d%s", cfg.Port, server.APIPrefix), "env", cfg.Env)
 	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
+	<-stopped // ListenAndServe returns as soon as Shutdown starts; wait for in-flight requests to drain
 	d.Bus.Wait()
 	return nil
 }
