@@ -1,0 +1,11 @@
+// Shared build settings for the EvTap app target.
+// NOTE: "//" starts a comment in xcconfig files, hence the "$()" trick inside URLs.
+
+MARKETING_VERSION = 1.0.0
+CURRENT_PROJECT_VERSION = 1
+
+// Public website (share links, universal links).
+WEB_BASE_URL = https:/$()/evtap.az
+
+// Set your Apple Developer team here (or in Xcode → Signing & Capabilities).
+DEVELOPMENT_TEAM =

@@ -1,0 +1,38 @@
+{
+  "sourceLanguage" : "az",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "az" : { "stringUnit" : { "state" : "translated", "value" : "EvTap" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "EvTap" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "EvTap" } }
+      }
+    },
+    "NSCameraUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "az" : { "stringUnit" : { "state" : "translated", "value" : "Elan üçün əmlakın şəklini çəkmək üçün kameradan istifadə olunur." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "EvTap uses the camera to take photos of your property for a listing." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Камера нужна, чтобы сфотографировать объект для объявления." } }
+      }
+    },
+    "NSLocationWhenInUseUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "az" : { "stringUnit" : { "state" : "translated", "value" : "Elanın yerini xəritədə qeyd etmək üçün yerləşməniz istifadə olunur." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "EvTap uses your location to pin your property on the map." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Геопозиция используется, чтобы отметить объект на карте." } }
+      }
+    },
+    "NSPhotoLibraryUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "az" : { "stringUnit" : { "state" : "translated", "value" : "Elana və profilə şəkil əlavə etmək üçün qalereyaya giriş lazımdır." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "EvTap needs access to your photos to add pictures to listings and your profile." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Доступ к фото нужен, чтобы добавить снимки в объявление и профиль." } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

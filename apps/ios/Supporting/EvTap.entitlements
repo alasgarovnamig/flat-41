@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Push notifications (development for Debug, production for Release — see Config/*.xcconfig). -->
+	<key>aps-environment</key>
+	<string>$(APS_ENVIRONMENT)</string>
+	<!-- Universal links: placeholder. Host https://evtap.az/.well-known/apple-app-site-association with
+	     appID "<TEAM_ID>.az.evtap.app" and paths /listing/*, /payment/result before enabling in the portal. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:evtap.az</string>
+	</array>
+</dict>
+</plist>
