@@ -1,5 +1,11 @@
 import { Module } from '@nestjs/common';
+import { MessagingModule } from '../messaging/messaging.module';
+import { RealtimeGateway } from './realtime.gateway';
 
-/** TODO: implemented by the owning workstream (see docs/ARCHITECTURE.md → API module ownership). */
-@Module({})
+/** socket.io gateway at /ws — see REALTIME in @evtap/shared. */
+@Module({
+  imports: [MessagingModule],
+  providers: [RealtimeGateway],
+  exports: [RealtimeGateway],
+})
 export class RealtimeModule {}

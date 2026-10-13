@@ -1,5 +1,9 @@
 import { Module } from '@nestjs/common';
+import { PushService } from './push.service';
 
-/** TODO: implemented by the owning workstream (see docs/ARCHITECTURE.md → API module ownership). */
-@Module({})
+/** Mobile push (Expo) for every notification — provider chosen by PUSH_PROVIDER (console | expo). */
+@Module({
+  providers: [PushService],
+  exports: [PushService],
+})
 export class PushModule {}

@@ -164,6 +164,7 @@ export const REALTIME = {
     'conversation:read': '{ conversationId, readerId, readAt }',
     'notification:new': 'AppNotification',
     'payment:updated': 'Payment',
+    'typing': '{ conversationId, userId } (relayed from the other participant; throttled to ~1/s)',
   },
   clientEvents: {
     'typing': '{ conversationId }',

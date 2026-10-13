@@ -142,6 +142,8 @@ export const savedSearchSchema = z.object({ name: z.string().trim().min(1).max(8
 // ───────────── Messaging ─────────────
 export const startConversationSchema = z.object({ listingId: z.string().uuid(), message: z.string().trim().min(1).max(2000) });
 export const sendMessageSchema = z.object({ body: z.string().trim().min(1).max(2000) });
+/** GET /conversations/:id/messages — cursor = id of the oldest message the client already has. */
+export const messageListQuerySchema = z.object({ before: z.string().uuid().optional(), limit: intQ.min(1).max(100).default(50) });
 
 // ───────────── Bookings ─────────────
 const bookingDates = z
@@ -270,6 +272,7 @@ export type CreateBookingInput = z.input<typeof createBookingSchema>;
 export type BookingQuoteInput = z.input<typeof bookingQuoteSchema>;
 export type AgencyInput = z.input<typeof agencySchema>;
 export type MortgageLeadInput = z.input<typeof mortgageLeadSchema>;
+export type MessageListQuery = z.input<typeof messageListQuerySchema>;
 export type SavedSearchInput = z.input<typeof savedSearchSchema>;
 export type BannerInput = z.input<typeof bannerSchema>;
 export type CmsPageInput = z.input<typeof cmsPageSchema>;
