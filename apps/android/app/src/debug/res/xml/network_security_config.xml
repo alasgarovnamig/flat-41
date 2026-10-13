@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DEBUG ONLY: cleartext HTTP/WS to the local API (emulator host 10.0.2.2, localhost, or a LAN IP set via
+     EVTAP_API_URL_DEBUG) and user-installed CAs for proxies such as Charles/mitmproxy. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

@@ -1,0 +1,19 @@
+.gradle/
+.kotlin/
+build/
+/local.properties
+/captures/
+.idea/
+*.iml
+.cxx/
+.externalNativeBuild/
+
+# secrets / per-developer config — never commit
+google-services.json
+*.jks
+*.keystore
+keystore.properties
+
+# tools/gen-icons.mjs scratch (npm pack lucide-static)
+/package/
+/*.tgz
