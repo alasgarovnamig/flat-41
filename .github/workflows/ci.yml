@@ -37,5 +37,18 @@ jobs:
       - run: pnpm --filter @evtap/web build
       - run: pnpm --filter @evtap/admin build
       - run: pnpm --filter @evtap/api db:migrate
+      - run: pnpm --filter @evtap/api db:seed
+        env: { SEED_IMAGES: local }
       - run: pnpm --filter @evtap/mockbank test
+        env: { DATABASE_URL: postgres://evtap:evtap@localhost:5432/mockbank_dev }
+      - name: Start API for live tests
+        working-directory: apps/api
+        run: |
+          nohup node dist/main.js > /tmp/api.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4000/api/v1/health && break; sleep 1; done
       - run: pnpm --filter @evtap/api test
+        env: { API_URL: http://localhost:4000 }
+      - name: API log on failure
+        if: failure()
+        run: tail -100 /tmp/api.log || true
+      - run: pnpm --filter @evtap/mobile exec expo export --platform android --output-dir /tmp/expo-android
