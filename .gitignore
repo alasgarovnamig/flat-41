@@ -10,7 +10,8 @@ coverage/
 .env.local
 .env.*.local
 !.env.example
-uploads/
+/apps/api/uploads/
+/uploads/
 apps/mobile/ios/
 apps/mobile/android/
 .DS_Store
