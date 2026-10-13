@@ -3,6 +3,8 @@ import { AgenciesModule } from '../agencies/agencies.module';
 import { ContentModule } from '../content/content.module';
 import { ListingsModule } from '../listings/listings.module';
 import { MortgageModule } from '../mortgage/mortgage.module';
+import { PromotionsModule } from '../promotions/promotions.module';
+import { WalletModule } from '../wallet/wallet.module';
 import { AdminListingsService } from './admin-listings.service';
 import { AdminListingsController, AdminMiscController, AdminUsersController } from './admin.controller';
 import { AdminUsersService } from './admin-users.service';
@@ -13,7 +15,7 @@ import { AdminUsersService } from './admin-users.service';
  * revenue stats) live in their own modules; dashboard stats live in StatsModule.
  */
 @Module({
-  imports: [ListingsModule, AgenciesModule, ContentModule, MortgageModule],
+  imports: [ListingsModule, AgenciesModule, ContentModule, MortgageModule, PromotionsModule, WalletModule],
   controllers: [AdminListingsController, AdminUsersController, AdminMiscController],
   providers: [AdminListingsService, AdminUsersService],
 })

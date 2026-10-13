@@ -2,13 +2,14 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { and, desc, eq, isNull, sql, type SQL } from 'drizzle-orm';
 import type { AdminListing, AdminUser, AuditLog, ListingReport, Paginated, Payment, Wallet, WalletTransaction } from '@evtap/shared';
 import { Database, InjectDb } from '../../db/db.module';
-import { auditLogs, listingReports, listings, payments, refreshSessions, users, walletTransactions, wallets } from '../../db/schema';
+import { auditLogs, listingReports, listings, payments, refreshSessions, users, walletTransactions } from '../../db/schema';
 import type { AuthUser } from '../../common/decorators';
 import { AppError, notFound } from '../../common/errors';
 import { toUserDto } from '../../common/mappers';
 import { pageArgs, paginated } from '../../common/pagination';
 import { iso } from '../../common/util';
 import { AuditService } from '../audit/audit.service';
+import { WalletService } from '../wallet/wallet.service';
 import { adminCardColumns, toAdminListing } from '../listings/listing.mapper';
 import { reportColumns, toAuditDto, toPaymentDto, toReportDto, toWalletTxDto } from './admin.mappers';
 
@@ -29,7 +30,7 @@ const toAdminUser = (r: AdminUserRow): AdminUser => ({
 /** Admin: users, reports, audit log. */
 @Injectable()
 export class AdminUsersService {
-  constructor(@InjectDb() private readonly db: Database, private readonly audit: AuditService) {}
+  constructor(@InjectDb() private readonly db: Database, private readonly audit: AuditService, private readonly wallet: WalletService) {}
 
   async list(q: AdminUserQuery): Promise<Paginated<AdminUser>> {
     const conds: SQL[] = [];
@@ -80,23 +81,14 @@ export class AdminUsersService {
     return this.getAdminUser(id);
   }
 
-  // TODO: delegate to WalletService.credit/debit (money workstream) once available; this writes the wallet tables directly.
   async walletAdjust(id: string, amount: number, reason: string, actor: AuthUser, ip: string | null): Promise<Wallet> {
     const [u] = await this.db.select({ id: users.id }).from(users).where(eq(users.id, id));
     if (!u) throw notFound('User');
-    const wallet = await this.db.transaction(async (tx) => {
-      await tx.insert(wallets).values({ userId: id }).onConflictDoNothing();
-      const [w] = await tx.select().from(wallets).where(eq(wallets.userId, id)).for('update');
-      const balance = w.balance + amount;
-      if (balance < 0) throw new AppError('INSUFFICIENT_FUNDS', 'Adjustment would make the balance negative');
-      const [nw] = await tx.update(wallets).set({ balance }).where(eq(wallets.userId, id)).returning();
-      await tx.insert(walletTransactions).values({
-        userId: id, type: 'ADJUSTMENT', amount, bonusAmount: 0, balanceAfter: nw.balance + nw.bonusBalance, description: reason, actorId: actor.id,
-      });
-      return nw;
-    });
+    const opts = { actorId: actor.id };
+    if (amount > 0) await this.wallet.credit(id, amount, 'ADJUSTMENT', reason, opts);
+    else await this.wallet.debit(id, -amount, reason, { ...opts, type: 'ADJUSTMENT', source: 'REAL_ONLY' });
     await this.audit.log(actor.id, 'wallet.adjust', 'user', id, { amount, reason }, ip);
-    return { balance: wallet.balance, bonusBalance: wallet.bonusBalance, currency: wallet.currency as Wallet['currency'] };
+    return this.wallet.get(id);
   }
 
   // ───────── Reports ─────────

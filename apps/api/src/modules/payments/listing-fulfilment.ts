@@ -7,9 +7,9 @@ import { SettingsService } from '../settings/settings.service';
 import { withTx } from '../wallet/tx';
 
 /**
- * Listing state changes caused by payments. The listings table belongs to the marketplace workstream, whose
- * `ListingsService.markListingFeePaid / markVerified` is not available in this worktree yet.
- * TODO: delegate to ListingsService.markListingFeePaid(listingId, tx) / markVerified(listingId, tx) once merged.
+ * Listing state changes caused by payments (LISTING_FEE, VERIFICATION).
+ * Kept separate from ListingsService on purpose: it returns booleans for idempotent payment handlers and supports
+ * revoking the badge when a VERIFICATION payment is refunded.
  */
 @Injectable()
 export class ListingFulfilment {

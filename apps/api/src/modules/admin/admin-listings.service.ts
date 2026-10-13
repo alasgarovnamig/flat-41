@@ -2,7 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { and, asc, desc, eq, sql, type SQL } from 'drizzle-orm';
 import type { AdminListing, ListingDetail, ListingReport, Paginated, UpdateListingInput } from '@evtap/shared';
 import { Database, InjectDb } from '../../db/db.module';
-import { listingPromotions, listingReports, listings, users } from '../../db/schema';
+import { listingReports, listings, users } from '../../db/schema';
 import type { AuthUser } from '../../common/decorators';
 import { AppError, notFound } from '../../common/errors';
 import { pageArgs, paginated } from '../../common/pagination';
@@ -12,15 +12,12 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { SettingsService } from '../settings/settings.service';
 import { adminCardColumns, toAdminListing } from '../listings/listing.mapper';
 import { ListingsService } from '../listings/listings.service';
+import { PromotionsService } from '../promotions/promotions.service';
 import { reportColumns, toReportDto } from './admin.mappers';
 
 export interface AdminListingQuery { status?: string; q?: string; dealType?: string; ownerId?: string; reported?: boolean; page: number; pageSize: number }
 
 /** Columns on `listings` that each promotion type extends. BUMP only touches bumpedAt. */
-const PROMO_COLUMN = {
-  VIP: 'vipUntil', PREMIUM: 'premiumUntil', HIGHLIGHT: 'highlightUntil', URGENT: 'urgentUntil', AUTO_BUMP: 'autoBumpUntil',
-} as const;
-
 @Injectable()
 export class AdminListingsService {
   constructor(
@@ -29,6 +26,7 @@ export class AdminListingsService {
     private readonly settings: SettingsService,
     private readonly notifications: NotificationsService,
     private readonly audit: AuditService,
+    private readonly promotions: PromotionsService,
   ) {}
 
   async list(q: AdminListingQuery): Promise<Paginated<AdminListing>> {
@@ -114,29 +112,8 @@ export class AdminListingsService {
     if (row.status !== 'ACTIVE') throw new AppError('LISTING_NOT_ACTIVE', 'Only active listings can be promoted', HttpStatus.CONFLICT);
     const service = await this.settings.getService(serviceCode);
     if (!service?.promotionType) throw new AppError('INVALID_SERVICE', `Unknown promotion service ${serviceCode}`);
-    await this.applyPromotion(row, service.promotionType, service.code, service.durationDays);
+    await this.promotions.apply(id, service.code, 'ADMIN');
     await this.audit.log(actor.id, 'listing.promote', 'listing', id, { serviceCode }, ip);
     return this.getAdminListing(id);
-  }
-
-  // TODO: delegate to PromotionsService.apply(listingId, serviceCode, 'ADMIN') once the money workstream lands.
-  private async applyPromotion(row: typeof listings.$inferSelect, type: string, serviceCode: string, durationDays: number) {
-    const now = new Date();
-    await this.db.transaction(async (tx) => {
-      const patch: Partial<typeof listings.$inferInsert> = {};
-      let endsAt: Date | null = null;
-      if (type === 'BUMP') {
-        patch.bumpedAt = now;
-      } else {
-        const col = PROMO_COLUMN[type as keyof typeof PROMO_COLUMN];
-        const current = row[col];
-        const from = current && current > now ? current : now; // extend a running promotion
-        endsAt = addDays(from, durationDays);
-        patch[col] = endsAt;
-        if (type === 'AUTO_BUMP') patch.bumpedAt = now;
-      }
-      await tx.update(listings).set(patch).where(eq(listings.id, row.id));
-      await tx.insert(listingPromotions).values({ listingId: row.id, type, serviceCode, startsAt: now, endsAt, source: 'ADMIN' });
-    });
   }
 }
