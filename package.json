@@ -1,0 +1,21 @@
+{
+  "name": "evtap",
+  "private": true,
+  "version": "1.0.0",
+  "description": "EvTap — real estate marketplace for Azerbaijan (sale, long-term & daily rent)",
+  "packageManager": "pnpm@10.28.0",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build:shared": "pnpm --filter @evtap/shared build",
+    "dev:api": "pnpm --filter @evtap/api dev",
+    "dev:mockbank": "pnpm --filter @evtap/mockbank dev",
+    "dev:web": "pnpm --filter @evtap/web dev",
+    "dev:admin": "pnpm --filter @evtap/admin dev",
+    "dev:mobile": "pnpm --filter @evtap/mobile start",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "db:migrate": "pnpm --filter @evtap/api db:migrate",
+    "db:seed": "pnpm --filter @evtap/api db:seed"
+  }
+}
