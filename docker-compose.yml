@@ -1,0 +1,84 @@
+# EvTap — full local stack.
+#   docker compose up --build
+#   docker compose exec api node dist/db/seed.js        # demo data (admin@evtap.az / Admin12345!)
+# Web http://localhost:3000 · Admin http://localhost:3001 · API http://localhost:4000/api/docs · Bank http://localhost:4100/admin
+name: evtap
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: evtap
+      POSTGRES_PASSWORD: evtap
+      POSTGRES_DB: evtap
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/10-mockbank.sql:ro
+    ports: ["5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evtap"]
+      interval: 5s
+      retries: 20
+
+  mockbank:
+    build: { context: ., dockerfile: apps/mockbank/Dockerfile }
+    environment:
+      DATABASE_URL: postgres://evtap:evtap@postgres:5432/mockbank
+      PUBLIC_URL: http://localhost:4100
+      MERCHANTS: evtap:${MOCKBANK_SECRET:-evtap-mockbank-secret}:EvTap
+      NODE_ENV: development # shows test cards on the checkout page
+    ports: ["4100:4100"]
+    depends_on: { postgres: { condition: service_healthy } }
+
+  api:
+    build: { context: ., dockerfile: docker/api.Dockerfile }
+    environment:
+      NODE_ENV: development # keeps OTP dev code 111111 + devCode in responses; use production for real deployments
+      DATABASE_URL: postgres://evtap:evtap@postgres:5432/evtap
+      API_PUBLIC_URL: http://localhost:4000
+      API_INTERNAL_URL: http://api:4000
+      WEB_URL: http://localhost:3000
+      ADMIN_URL: http://localhost:3001
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3001,http://localhost:8081
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change-me-access}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-me-refresh}
+      OTP_DEV_CODE: "111111"
+      PAYMENT_PROVIDER: mockbank
+      MOCKBANK_URL: http://mockbank:4100
+      MOCKBANK_PUBLIC_URL: http://localhost:4100
+      MOCKBANK_MERCHANT_ID: evtap
+      MOCKBANK_SECRET: ${MOCKBANK_SECRET:-evtap-mockbank-secret}
+      UPLOAD_DIR: /data/uploads
+      SEED_IMAGES: ${SEED_IMAGES:-}
+    volumes: [uploads:/data/uploads]
+    ports: ["4000:4000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      mockbank: { condition: service_started }
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:4000
+        NEXT_PUBLIC_WEB_URL: http://localhost:3000
+        NEXT_IMAGE_UNOPTIMIZED: "1"
+    environment:
+      API_INTERNAL_URL: http://api:4000 # server-side rendering talks to the API over the docker network
+    ports: ["3000:3000"]
+    depends_on: [api]
+
+  admin:
+    build:
+      context: .
+      dockerfile: docker/admin.Dockerfile
+      args:
+        VITE_API_URL: http://localhost:4000
+        VITE_WEB_URL: http://localhost:3000
+    ports: ["3001:80"]
+    depends_on: [api]
+
+volumes:
+  pgdata:
+  uploads:
