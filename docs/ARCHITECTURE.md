@@ -36,7 +36,7 @@
 | Money | `listing.price` = **major** units (whole ₼). Everything else (payments, wallet, fees, bookings, catalog prices) = **minor** units (qəpik). Use `formatPrice` / `formatMoney` from shared |
 | Dates | ISO strings; booking dates `YYYY-MM-DD` |
 | Pagination | `?page=1&pageSize=20` → `{ items, total, page, pageSize }` |
-| Errors | `{ statusCode, code?, message: string \| string[] }` — switch on `code` (e.g. `OTP_INVALID`, `INSUFFICIENT_FUNDS`, `QUOTA_EXCEEDED`, `VALIDATION_ERROR`) |
+| Errors | `{ statusCode, code?, message: string \| string[] }` — switch on `code` (e.g. `OTP_INVALID`, `INSUFFICIENT_FUNDS`, `DATES_UNAVAILABLE`, `VALIDATION_ERROR`; full list: `ERROR_CODES` in packages/shared/src/api.ts) |
 | i18n | `az` (default), `ru`, `en`. Location names via `localized(name, locale)` |
 | Phone | E.164 `+994XXXXXXXXX` (`phoneSchema` normalises `050 123 45 67`) |
 | Brand | Name **EvTap**. Primary `#0E7C66` (teal-green), primary-dark `#0A5C4C`, accent/VIP `#F5A524` (gold), premium `#7C3AED` (violet), urgent `#E5484D` (red), highlight card bg `#FFF8E6`, text `#111827`, muted `#6B7280`, surface `#F7F7F8`. Font: Inter (web/admin), system (mobile). Rounded 12px cards |

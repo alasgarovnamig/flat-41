@@ -36,3 +36,17 @@ type WalletOpts struct {
 	TxType      string // debit ledger type (default SPEND)
 	Source      string // BONUS_FIRST (default) | REAL_ONLY | BONUS_ONLY
 }
+
+// PushAPI is implemented by internal/modules/push (communication workstream).
+type PushAPI interface {
+	// SendToUsers sends a payload to every registered device of the given users (the payload may differ per user).
+	// Returns the number of device messages handed to the provider. Tokens reported invalid are deleted.
+	SendToUsers(ctx context.Context, userIDs []string, payload func(userID string) PushPayload) (int, error)
+}
+
+// PushPayload is one mobile push notification. Data carries deep-link parameters (type, conversationId, …).
+type PushPayload struct {
+	Title string
+	Body  string
+	Data  map[string]any
+}

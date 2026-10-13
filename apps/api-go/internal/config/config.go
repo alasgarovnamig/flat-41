@@ -41,8 +41,15 @@ type Config struct {
 		MockBank struct{ URL, PublicURL, MerchantID, Secret string }
 	}
 	Push struct {
-		Provider        string
+		Provider        string // console (default) | native (APNs + FCM, Expo tokens via Expo) | expo
 		ExpoAccessToken string
+		// FCM HTTP v1: service-account JSON (contents, not a path).
+		FCMServiceAccountJSON string
+		// APNs token-based auth (.p8 key contents; literal "\n" sequences are accepted).
+		APNs struct {
+			KeyID, TeamID, KeyP8, Topic string
+			Sandbox                     bool
+		}
 	}
 	Mail       struct{ Provider, From, SMTPURL string }
 	Admin      struct{ Email, Password string }
@@ -106,6 +113,12 @@ func Load() *Config {
 
 	c.Push.Provider = str("PUSH_PROVIDER", "console")
 	c.Push.ExpoAccessToken = os.Getenv("EXPO_ACCESS_TOKEN")
+	c.Push.FCMServiceAccountJSON = os.Getenv("FCM_SERVICE_ACCOUNT_JSON")
+	c.Push.APNs.KeyID = os.Getenv("APNS_KEY_ID")
+	c.Push.APNs.TeamID = os.Getenv("APNS_TEAM_ID")
+	c.Push.APNs.KeyP8 = os.Getenv("APNS_KEY_P8")
+	c.Push.APNs.Topic = str("APNS_TOPIC", "az.evtap.app")
+	c.Push.APNs.Sandbox = os.Getenv("APNS_SANDBOX") == "true" || os.Getenv("APNS_SANDBOX") == "1"
 	c.Mail.Provider = str("MAIL_PROVIDER", "console")
 	c.Mail.From = str("MAIL_FROM", "EvTap <no-reply@evtap.az>")
 	c.Mail.SMTPURL = os.Getenv("SMTP_URL")

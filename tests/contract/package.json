@@ -1,0 +1,26 @@
+{
+  "name": "@evtap/contract-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Implementation-agnostic HTTP + WebSocket contract test suite for the EvTap API (acceptance gate for any backend)",
+  "scripts": {
+    "test": "tsx scripts/run.ts",
+    "test:file": "node --import tsx --test",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@evtap/shared": "workspace:*",
+    "pg": "^8.23.1",
+    "sharp": "^0.34.5",
+    "ws": "^8.21.3",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
+    "@types/ws": "^8.18.2",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3"
+  }
+}

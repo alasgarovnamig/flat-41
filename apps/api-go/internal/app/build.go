@@ -7,6 +7,7 @@ import (
 	"github.com/alasgarovnamig/evtap/api/internal/config"
 	"github.com/alasgarovnamig/evtap/api/internal/core/audit"
 	"github.com/alasgarovnamig/evtap/api/internal/core/events"
+	"github.com/alasgarovnamig/evtap/api/internal/core/mail"
 	"github.com/alasgarovnamig/evtap/api/internal/core/notify"
 	"github.com/alasgarovnamig/evtap/api/internal/core/settings"
 	"github.com/alasgarovnamig/evtap/api/internal/core/sms"
@@ -21,5 +22,6 @@ func Build(cfg *config.Config, pool *pgxpool.Pool) *Deps {
 	return &Deps{
 		Cfg: cfg, Pool: pool, Bus: bus, Settings: st, Notify: notify.New(pool, bus), Audit: audit.New(pool), SMS: smsP,
 		Signer: signer, Auth: auth.NewService(pool, cfg, signer, smsP, st), Jobs: &Scheduler{},
+		Mail: mail.New(cfg.Mail.Provider, cfg.Mail.From, cfg.Mail.SMTPURL),
 	}
 }
