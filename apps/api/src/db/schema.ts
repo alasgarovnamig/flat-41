@@ -398,6 +398,12 @@ export const subscriptions = pgTable('subscriptions', {
   cardMask: varchar('card_mask', { length: 24 }),
   renewalAttempts: integer('renewal_attempts').notNull().default(0),
   lastPaymentId: uuid('last_payment_id'),
+  // ── money workstream additions ──
+  /** When the renewal cron last tried to charge (PAST_DUE retries are spaced ≥ 24 h apart). */
+  lastRenewalAttemptAt: ts('last_renewal_attempt_at'),
+  /** Last time monthly credits (bumps / VIP / Premium) were reset — yearly plans reset them every month. */
+  creditsResetAt: ts('credits_reset_at'),
+  // ── end money workstream additions ──
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 }, (t) => [index('subscriptions_user_idx').on(t.userId, t.status), index('subscriptions_end_idx').on(t.currentPeriodEnd)]);
