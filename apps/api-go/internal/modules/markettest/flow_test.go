@@ -24,6 +24,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
+	_ "golang.org/x/image/webp" // decode thumbnails
 
 	"github.com/alasgarovnamig/evtap/api/internal/app"
 	"github.com/alasgarovnamig/evtap/api/internal/config"
@@ -221,7 +222,7 @@ func TestMarketplaceFlow(t *testing.T) {
 	e.expect(up, 201, "upload")
 	uploadID := up.body["id"].(string)
 	thumb := up.body["thumbUrl"].(string)
-	if !strings.HasSuffix(thumb, "_thumb.jpg") || up.body["mime"] != "image/jpeg" {
+	if !strings.HasSuffix(thumb, "_thumb.webp") || up.body["mime"] != "image/webp" {
 		t.Fatalf("upload dto %v", up.body)
 	}
 	var w, h int
@@ -232,10 +233,10 @@ func TestMarketplaceFlow(t *testing.T) {
 	if err != nil || res.StatusCode != 200 {
 		t.Fatalf("thumb not served: %v %v", err, res)
 	}
-	thumbImg, err := jpeg.Decode(res.Body)
+	thumbImg, format, err := image.Decode(res.Body)
 	res.Body.Close()
-	if err != nil || thumbImg.Bounds().Dx() != 400 {
-		t.Fatalf("thumb %v %v", err, thumbImg)
+	if err != nil || format != "webp" || thumbImg.Bounds().Dx() != 400 {
+		t.Fatalf("thumb %v %s", err, format)
 	}
 
 	// ── create ──

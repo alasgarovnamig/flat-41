@@ -3,8 +3,8 @@
 // az/ru/en), banners, demo users, agencies (incl. a developer), 63 listings, reports, mortgage leads, favorites,
 // a saved search and the demo PRO subscription.
 //
-// Usage: go run ./cmd/seed   (SEED_IMAGES=local → placeholder JPEGs generated into UPLOAD_DIR/seed/ and served by the
-// API at ${API_PUBLIC_URL}/uploads/seed/<id>.jpg; otherwise Unsplash URLs are hot-linked like before).
+// Usage: go run ./cmd/seed   (SEED_IMAGES=local → placeholder WebPs generated into UPLOAD_DIR/seed/ and served by the
+// API at ${API_PUBLIC_URL}/uploads/seed/<id>.webp — same URL scheme as the TS seed; otherwise Unsplash URLs are hot-linked like before).
 package main
 
 import (
@@ -65,7 +65,7 @@ func (s *seeder) daysAhead(d int) time.Time { return s.now.Add(time.Duration(d) 
 func (s *seeder) photoURL(id string) (string, string) {
 	if s.local {
 		base := s.cfg.APIPublicURL + "/uploads/seed/" + id
-		return base + ".jpg", base + "_t.jpg"
+		return base + ".webp", base + "_t.webp"
 	}
 	return "https://images.unsplash.com/photo-" + id + "?w=1600&q=80", "https://images.unsplash.com/photo-" + id + "?w=400&q=70"
 }

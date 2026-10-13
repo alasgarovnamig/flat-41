@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/jpeg"
 	"os"
 	"path/filepath"
 	"strconv"
 
 	"github.com/disintegration/imaging"
+	"github.com/gen2brain/webp"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/basicfont"
 	"golang.org/x/image/math/fixed"
@@ -94,7 +94,8 @@ func drawCaption(dst *image.RGBA, text string, baseline int) {
 	}
 }
 
-// generateLocalImages writes UPLOAD_DIR/seed/<id>.jpg (1600×1200) and <id>_t.jpg (400 px wide) for every demo photo.
+// generateLocalImages writes UPLOAD_DIR/seed/<id>.webp (1600×1200) and <id>_t.webp (400 px wide) for every demo photo
+// (same file names / URL scheme as the TS seed).
 func generateLocalImages(uploadDir string) error {
 	dir := filepath.Join(uploadDir, "seed")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -103,10 +104,10 @@ func generateLocalImages(uploadDir string) error {
 	for _, kind := range photoKinds {
 		for i, id := range photos[kind] {
 			img := placeholder(kind, i)
-			if err := writeJPEG(filepath.Join(dir, id+".jpg"), img, 82); err != nil {
+			if err := writeWebP(filepath.Join(dir, id+".webp"), img, 80); err != nil {
 				return err
 			}
-			if err := writeJPEG(filepath.Join(dir, id+"_t.jpg"), imaging.Resize(img, 400, 0, imaging.Lanczos), 75); err != nil {
+			if err := writeWebP(filepath.Join(dir, id+"_t.webp"), imaging.Resize(img, 400, 0, imaging.Lanczos), 70); err != nil {
 				return err
 			}
 		}
@@ -114,9 +115,10 @@ func generateLocalImages(uploadDir string) error {
 	return nil
 }
 
-func writeJPEG(path string, img image.Image, q int) error {
+// writeWebP encodes like the TS seed (sharp webp q80 / q70). Method 0 keeps the pure-Go (WASM) encoder fast.
+func writeWebP(path string, img image.Image, q int) error {
 	var buf bytes.Buffer
-	if err := jpeg.Encode(&buf, img, &jpeg.Options{Quality: q}); err != nil {
+	if err := webp.Encode(&buf, img, webp.Options{Quality: q, Method: 0}); err != nil {
 		return fmt.Errorf("encode %s: %w", path, err)
 	}
 	return os.WriteFile(path, buf.Bytes(), 0o644)
