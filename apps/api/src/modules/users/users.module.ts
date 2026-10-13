@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
 
-/** TODO: implemented by the owning workstream (see docs/ARCHITECTURE.md → API module ownership). */
-@Module({})
+@Module({ controllers: [UsersController], providers: [UsersService], exports: [UsersService] })
 export class UsersModule {}
