@@ -253,7 +253,11 @@ export const messages = pgTable('messages', {
   body: text('body').notNull(),
   readAt: ts('read_at'),
   createdAt: createdAt(),
-}, (t) => [index('messages_conv_idx').on(t.conversationId, t.createdAt)]);
+}, (t) => [
+  index('messages_conv_idx').on(t.conversationId, t.createdAt),
+  // ── communication (additive): per-sender anti-spam rate check (messages in the last minute) ──
+  index('messages_sender_idx').on(t.senderId, t.createdAt),
+]);
 
 // ───────────────────────────── Bookings & reviews ─────────────────────────────
 export const bookings = pgTable('bookings', {
