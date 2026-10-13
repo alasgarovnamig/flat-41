@@ -3,6 +3,7 @@ package app
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -12,6 +13,7 @@ import (
 	"github.com/alasgarovnamig/evtap/api/internal/config"
 	"github.com/alasgarovnamig/evtap/api/internal/core/audit"
 	"github.com/alasgarovnamig/evtap/api/internal/core/events"
+	"github.com/alasgarovnamig/evtap/api/internal/core/mail"
 	"github.com/alasgarovnamig/evtap/api/internal/core/notify"
 	"github.com/alasgarovnamig/evtap/api/internal/core/settings"
 	"github.com/alasgarovnamig/evtap/api/internal/core/sms"
@@ -25,6 +27,7 @@ type Deps struct {
 	Notify   *notify.Service
 	Audit    *audit.Service
 	SMS      sms.Provider
+	Mail     *mail.Service
 	Signer   *auth.Signer
 	Auth     *auth.Service
 	Jobs     *Scheduler
@@ -34,6 +37,28 @@ type Deps struct {
 	Listings   ListingsAPI
 	Promotions PromotionsAPI
 	Wallet     WalletAPI
+	Push       PushAPI
+
+	shutdownMu sync.Mutex
+	shutdown   []func(ctx context.Context)
+}
+
+// OnShutdown registers fn to run on graceful shutdown before the HTTP server stops (e.g. closing WebSockets,
+// which http.Server.Shutdown does not track because they are hijacked).
+func (d *Deps) OnShutdown(fn func(ctx context.Context)) {
+	d.shutdownMu.Lock()
+	defer d.shutdownMu.Unlock()
+	d.shutdown = append(d.shutdown, fn)
+}
+
+// Shutdown runs the OnShutdown hooks in reverse registration order.
+func (d *Deps) Shutdown(ctx context.Context) {
+	d.shutdownMu.Lock()
+	hooks := append([]func(context.Context){}, d.shutdown...)
+	d.shutdownMu.Unlock()
+	for i := len(hooks) - 1; i >= 0; i-- {
+		hooks[i](ctx)
+	}
 }
 
 // Module is implemented by every feature package (internal/modules/*).
