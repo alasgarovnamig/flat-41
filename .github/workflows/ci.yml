@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: evtap
+          POSTGRES_PASSWORD: evtap
+          POSTGRES_DB: evtap
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U evtap" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://evtap:evtap@localhost:5432/evtap
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:shared
+      - name: Create mock bank test database
+        run: PGPASSWORD=evtap psql -h localhost -U evtap -c "create database mockbank;" -c "create database mockbank_dev;"
+      - run: pnpm -r typecheck
+      - run: pnpm --filter @evtap/api build
+      - run: pnpm --filter @evtap/mockbank build
+      - run: pnpm --filter @evtap/web build
+      - run: pnpm --filter @evtap/admin build
+      - run: pnpm --filter @evtap/api db:migrate
+      - run: pnpm --filter @evtap/mockbank test
+      - run: pnpm --filter @evtap/api test
